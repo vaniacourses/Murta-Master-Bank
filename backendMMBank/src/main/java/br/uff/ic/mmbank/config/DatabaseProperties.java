@@ -1,13 +1,14 @@
 package br.uff.ic.mmbank.config;
 
 import org.springframework.validation.annotation.Validated;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 @ConfigurationProperties(prefix = "db")
-@Validated // Ativa a validação estilo "Zod"
+@Validated
 public record DatabaseProperties(
     
     @NotBlank(message = "A URL do banco não pode estar vazia no .env")
