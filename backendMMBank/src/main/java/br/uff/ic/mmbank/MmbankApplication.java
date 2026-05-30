@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties
 public class MmbankApplication {
-
+	//teste de commit na maon	
 	public static void main(String[] args) {
 		SpringApplication.run(MmbankApplication.class, args);
 	}
