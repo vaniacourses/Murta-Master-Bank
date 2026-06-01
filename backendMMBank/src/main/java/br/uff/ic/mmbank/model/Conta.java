@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Builder
 public class Conta { // Simulação de conta, provisório
     @Id
-    @GENERATEDValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String numeroConta;
