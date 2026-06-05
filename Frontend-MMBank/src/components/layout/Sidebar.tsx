@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/auth/useAuth';
 
 export const Sidebar: React.FC = () => {
   const { utilizador, logout } = useAuth();
@@ -12,7 +12,7 @@ export const Sidebar: React.FC = () => {
         <h2>MM<span>Bank</span></h2>
         <p>Murta Master Bank</p>
       </div>
-      
+
       <nav className="menu">
         {/* Usamos a tag 'end' no Início para não ficar ativo noutras rotas */}
         <NavLink to="/dashboard" end className={({ isActive }) => isActive ? "active" : ""}>
@@ -39,7 +39,7 @@ export const Sidebar: React.FC = () => {
           </NavLink>
         )}
       </nav>
-      
+
       <div className="sidebar-footer" style={{ flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
         <NavLink to="/perfil" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>
           ⚙️ Meu Perfil

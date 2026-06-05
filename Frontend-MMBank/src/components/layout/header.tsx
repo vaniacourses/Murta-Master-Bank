@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/auth/useAuth';
 
 interface HeaderProps {
   title: string;
@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ title }) => {
   const { utilizador } = useAuth();
-  
+
   const inicial = utilizador?.nome ? utilizador.nome.charAt(0).toUpperCase() : 'U';
 
   return (

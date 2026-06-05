@@ -11,12 +11,12 @@ import { Transferencias } from '../../pages/transferencias/Transferencias';
 import { ChavesPix } from '../../pages/pix/ChavesPix';
 import { Extrato } from '../../pages/extrato/Extrato';
 import { Cartoes } from '../../pages/cartoes/Cartoes';
+import { Cartao } from '../../pages/cartoes/Cartao';
+import { SolicitarCartao } from '../../pages/cartoes/SolicitarCartao';
 import { Emprestimos } from '../../pages/emprestimo/Emprestimos';
 import { Home } from '../../pages/auth/Home';
 import { EmConstrucao } from '../../pages/EmContrucao';
 import { Configuracoes } from '../../pages/Perfil/Configuracoes';
-
-// Componente placeholder visualmente agradável para páginas em construção
 
 
 export const router = createBrowserRouter([
@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
       { path: '/recuperar-senha', element: <EmConstrucao titulo="Recuperação de Senha" /> },
     ]
   },
-  
+
   // --- ROTAS PRIVADAS (PF e Geral) ---
   {
     element: <PrivateRoute />,
@@ -46,22 +46,23 @@ export const router = createBrowserRouter([
         children: [
           { path: '/dashboard', element: <Dashboard /> },
           { path: '/perfil', element: <Configuracoes /> },
-          
+
           // Transferências e Extrato
           { path: '/transferencias', element: <Transferencias /> },
           { path: '/extrato', element: <Extrato /> },
-          
+
           // Domínio Pix
           { path: '/pix', element: <ChavesPix /> },
-          
+
           // Domínio Empréstimos
-          { path: '/emprestimos', element: <Emprestimos/> },
+          { path: '/emprestimos', element: <Emprestimos /> },
           { path: '/emprestimos/novo', element: <EmConstrucao titulo="Simular Empréstimo" /> },
-          
+
           // Domínio Cartões
           { path: '/cartoes', element: <Cartoes /> },
-          { path: '/cartoes/novo', element: <EmConstrucao titulo="Solicitar Novo Cartão" /> },
-          
+          { path: '/cartoes/novo', element: <SolicitarCartao /> },
+          { path: '/cartoes/:id', element: <Cartao /> },
+
           // Emprestimos
           { path: '/agendamentos', element: <EmConstrucao titulo="Pagamentos e Agendamentos" /> },
 
@@ -72,7 +73,7 @@ export const router = createBrowserRouter([
       }
     ],
   },
-  
+
   // --- Rota de Fallback (404) ---
   {
     path: '*',
