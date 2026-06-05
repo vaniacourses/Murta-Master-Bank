@@ -1,0 +1,324 @@
+.transferencias-container {
+  padding: 2rem;
+  background-color: var(--bg-primary, #f8fafc);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.transferencias-header h1 {
+  color: var(--bg-sidebar);
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.transferencias-header p {
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+/* Layout Grid */
+.transfer-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr; /* Coluna do formulário é ligeiramente mais larga */
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 968px) {
+  .transfer-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Painel Esquerdo (Opções e Contatos) */
+.transfer-options-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.method-selector-card, 
+.recent-contacts-card,
+.transfer-form-card {
+  background-color: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+/* Segmented Control (Toggle Pix/TED) */
+.method-selector-card h3,
+.card-header-simple h3 {
+  color: var(--bg-sidebar);
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+}
+
+.segmented-control {
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+  padding: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.segmented-control button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.segmented-control button:hover {
+  color: var(--bg-sidebar);
+}
+
+.segmented-control button.active {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.segmented-control button.active.pix-active { color: var(--success, #10b981); }
+.segmented-control button.active.ted-active { color: var(--accent-color, #3b82f6); }
+
+.method-icon {
+  font-size: 1.2rem;
+}
+
+.method-hint {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  padding: 0 0.5rem;
+}
+
+/* Contatos Recentes */
+.card-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn-text:hover {
+  text-decoration: underline;
+}
+
+.contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #f8fafc;
+}
+
+.contact-item:hover {
+  background-color: #f1f5f9;
+}
+
+.contact-item.selected {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-color: var(--accent-color);
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-right: 1rem;
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-info h4 {
+  color: var(--bg-sidebar);
+  font-size: 0.95rem;
+  margin-bottom: 0.1rem;
+}
+
+.contact-info span {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.contact-check {
+  color: var(--accent-color);
+  font-weight: bold;
+  font-size: 1.2rem;
+  width: 20px;
+}
+
+/* Painel Direito (Formulário de Transferência) */
+.transfer-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Grande Input de Valor */
+.amount-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(to bottom, #f8fafc, #ffffff);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.amount-input-group label {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.amount-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.currency-symbol {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-top: 0.3rem;
+}
+
+.amount-wrapper input {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--bg-sidebar);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+}
+
+.amount-wrapper input::placeholder {
+  color: #cbd5e1;
+}
+
+/* Remove as setas do input number */
+.amount-wrapper input::-webkit-outer-spin-button,
+.amount-wrapper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.balance-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.balance-hint strong {
+  color: var(--success, #10b981);
+}
+
+/* Campos de Texto Comuns */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bank-details-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.input-block label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.input-block input,
+.input-block select {
+  padding: 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--bg-sidebar);
+  background-color: #f8fafc;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.input-block input:focus,
+.input-block select:focus {
+  border-color: var(--accent-color);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Botão de Envio */
+.btn-submit-transfer {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 1.2rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-submit-transfer:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-submit-transfer:active {
+  transform: scale(0.99);
+}

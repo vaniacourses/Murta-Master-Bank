@@ -26,6 +26,8 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios","/usuarios/**").permitAll()
                         .requestMatchers("/auth/login").permitAll()
 
+                        .requestMatchers("/transferencias/**").permitAll()
+
                         .requestMatchers("/emprestimos/**")
                         .permitAll()
 
