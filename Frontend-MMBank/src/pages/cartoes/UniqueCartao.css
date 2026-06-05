@@ -18,7 +18,7 @@
 .btn-action.unlock { background: var(--success); color: white; }
 
 /* Limites */
-.limit-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; }
+.limit-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;  }
 .progress-bar-bg { height: 10px; background: #e2e8f0; border-radius: 5px; margin: 1rem 0; }
 .progress-bar-fill { height: 100%; background: var(--accent-color); border-radius: 5px; }
 
