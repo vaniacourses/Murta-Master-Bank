@@ -36,6 +36,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/transferencias/**").permitAll()
 
+                        .requestMatchers("/emprestimos/**")
+                        .permitAll()
+
+
                         // aualquer outra rota criada exige autenticacao
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
