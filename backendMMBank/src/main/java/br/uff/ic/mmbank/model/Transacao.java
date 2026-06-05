@@ -1,6 +1,5 @@
 package br.uff.ic.mmbank.model;
 
-
 import br.uff.ic.mmbank.model.enums.StatusTransacao;
 import br.uff.ic.mmbank.model.enums.TipoTransacao;
 import jakarta.persistence.*;
@@ -32,6 +31,10 @@ public class Transacao {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_id", nullable = false)
     private Conta conta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cartao_id", nullable = true)
+    private Cartao cartao;
 
     private String categoria;
     private String endToEndId;
