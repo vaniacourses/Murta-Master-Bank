@@ -14,19 +14,36 @@ export interface ICartao {
   limite: number;
   tipo: TipoCartao;
   status: StatusCartao;
-  gastoAtual?: number; // Para controle de interface
+  gastoAtual?: number;
+  diaFechamento: number;
+  diaPagamento:number; // Para controle de interface
 }
 
 // Mocks iniciais
 const cartoesMocks: ICartao[] = [
-  { id: 1, numero: '**** **** **** 4021', cvv: 123, dataValidade: '12/29', limite: 10000, tipo: 'CREDITO', status: 'ATIVO', gastoAtual: 3450.50 },
-  { id: 2, numero: '**** **** **** 8899', cvv: 456, dataValidade: '05/28', limite: 0, tipo: 'DEBITO', status: 'ATIVO', gastoAtual: 0 },
+  { id: 1, numero: '**** **** **** 4021', cvv: 123, dataValidade: '12/29', limite: 10000, tipo: 'CREDITO', status: 'ATIVO', gastoAtual: 3450.50, diaFechamento: 25, diaPagamento: 20 },
+  { id: 2, numero: '**** **** **** 8899', cvv: 456, dataValidade: '05/28', limite: 0, tipo: 'DEBITO', status: 'ATIVO', gastoAtual: 0, diaFechamento: 0, diaPagamento: 0 },
 ];
 
 export const Cartoes: React.FC = () => {
   const [view, setView] = useState<'LISTA' | 'DETALHES' | 'NOVO'>('LISTA');
   const [cartoes, setCartoes] = useState<ICartao[]>(cartoesMocks);
   const [cartaoSelecionado, setCartaoSelecionado] = useState<ICartao | null>(null);
+
+  const calcularDiasParaFechamento = (diaFechamento: number) => {
+    if (!diaFechamento) return 0;
+    const hoje = new Date();
+    const diaAtual = hoje.getDate();
+    
+    if (diaAtual < diaFechamento) {
+      return diaFechamento - diaAtual;
+    } else {
+      // Já passou do fechamento deste mês. Calcula os dias até o diaFechamento do mês seguinte.
+      // Descobre quantos dias tem o mês atual
+      const diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+      return (diasNoMes - diaAtual) + diaFechamento;
+    }
+  };
 
   const handleSelecionarCartao = (cartao: ICartao) => {
     setCartaoSelecionado(cartao);
@@ -37,6 +54,8 @@ export const Cartoes: React.FC = () => {
     setCartoes([...cartoes, novoCartao]);
     setView('LISTA');
   };
+
+  
 
   // Renderização Condicional
   if (view === 'DETALHES' && cartaoSelecionado) {
@@ -79,6 +98,12 @@ export const Cartoes: React.FC = () => {
               <span>Status: {cartao.status}</span>
               <span>Val: {cartao.dataValidade}</span>
             </div>
+
+            {cartao.tipo === 'CREDITO' && cartao.diaFechamento > 0 && (
+               <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem', color: '#fbbf24' }}>
+                 ⏱ Fatura vira em <strong>{calcularDiasParaFechamento(cartao.diaFechamento)} dias</strong>
+               </div>
+            )}
           </div>
         ))}
       </div>

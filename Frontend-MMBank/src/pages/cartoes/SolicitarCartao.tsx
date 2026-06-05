@@ -22,7 +22,9 @@ export const SolicitarCartao: React.FC<SolicitarCartaoProps> = ({ onVoltar, onCr
       limite: tipo === 'CREDITO' ? 5000 : 0, // Analise de crédito simulada
       tipo: tipo,
       status: 'ATIVO',
-      gastoAtual: 0
+      gastoAtual: 0,
+      diaFechamento: tipo === 'CREDITO' ? 25 : 0,
+      diaPagamento: tipo === 'CREDITO' ? 5 : 0,
     };
 
     alert(`Cartão de ${tipo} criado com sucesso!`);
