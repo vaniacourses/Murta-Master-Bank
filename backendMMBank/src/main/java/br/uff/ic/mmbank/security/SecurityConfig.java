@@ -26,6 +26,10 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios","/usuarios/**").permitAll()
                         .requestMatchers("/auth/login").permitAll()
 
+                        .requestMatchers("/emprestimos/**")
+                        .permitAll()
+
+
                         // aualquer outra rota criada exige autenticacao
                         .anyRequest().authenticated()
                 )
