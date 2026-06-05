@@ -27,6 +27,32 @@ public class TokenService {
                 .sign(algoritmo);
     }
 
+    public String validarToken(String token) {
+        try {
+            Algorithm algoritmo = Algorithm.HMAC256(SECRET_KEY);
+            return JWT.require(algoritmo)
+                    .withIssuer(ISSUER)
+                    .build()
+                    .verify(token)
+                    .getSubject();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getRole(String token) {
+        try {
+            Algorithm algoritmo = Algorithm.HMAC256(SECRET_KEY);
+            return JWT.require(algoritmo)
+                    .withIssuer(ISSUER)
+                    .build()
+                    .verify(token)
+                    .getClaim("role").asString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private Instant gerarDataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
