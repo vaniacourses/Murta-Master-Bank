@@ -1,40 +1,32 @@
 import React, { useState } from 'react';
-import type { ICartao, TipoCartao } from './Cartoes';
+import { useNavigate } from 'react-router-dom';
+import type { TipoCartao } from './Cartoes';
+import { useSolicitarCartao } from '../../hooks/cartoes/useSolicitarCartao';
 
-interface SolicitarCartaoProps {
-  onVoltar: () => void;
-  onCriar: (novoCartao: ICartao) => void;
-}
-
-export const SolicitarCartao: React.FC<SolicitarCartaoProps> = ({ onVoltar, onCriar }) => {
+export const SolicitarCartao: React.FC = () => {
+  const navigate = useNavigate();
+  const { solicitarCartao, isSubmitting, error } = useSolicitarCartao();
   const [tipo, setTipo] = useState<TipoCartao>('CREDITO');
   const [senhaConfirmacao, setSenhaConfirmacao] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Simulação do Back-end processando e gerando os dados da classe Cartao
-    const novoCartaoGerado: ICartao = {
-      id: Math.floor(Math.random() * 1000),
-      numero: `**** **** **** ${Math.floor(1000 + Math.random() * 9000)}`, // Gerado pelo sistema
-      cvv: Math.floor(100 + Math.random() * 900),
-      dataValidade: '10/30',
-      limite: tipo === 'CREDITO' ? 5000 : 0, // Analise de crédito simulada
-      tipo: tipo,
-      status: 'ATIVO',
-      gastoAtual: 0,
-      diaFechamento: tipo === 'CREDITO' ? 25 : 0,
-      diaPagamento: tipo === 'CREDITO' ? 5 : 0,
-    };
+  const handleVoltar = () => {
+    navigate('/cartoes');
+  };
 
-    alert(`Cartão de ${tipo} criado com sucesso!`);
-    onCriar(novoCartaoGerado);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const resultado = await solicitarCartao(tipo, senhaConfirmacao);
+    if (resultado) {
+      alert(`Cartão de ${tipo.toLowerCase()} criado com sucesso!`);
+      navigate('/cartoes');
+    }
   };
 
   return (
     <div className="cartoes-container">
       <header className="cartoes-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <button onClick={onVoltar} className="btn-outline" style={{ padding: '0.5rem 1rem' }}>← Voltar</button>
+        <button onClick={handleVoltar} className="btn-outline" style={{ padding: '0.5rem 1rem' }} disabled={isSubmitting}>← Voltar</button>
         <div>
           <h1>Solicitar Novo Cartão</h1>
           <p>Escolha o tipo de cartão que melhor atende às suas necessidades.</p>
@@ -47,7 +39,8 @@ export const SolicitarCartao: React.FC<SolicitarCartaoProps> = ({ onVoltar, onCr
           <select 
             value={tipo} 
             onChange={(e) => setTipo(e.target.value as TipoCartao)}
-            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+            disabled={isSubmitting}
+            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
           >
             <option value="CREDITO">Cartão de Crédito</option>
             <option value="DEBITO">Cartão de Débito</option>
@@ -67,12 +60,15 @@ export const SolicitarCartao: React.FC<SolicitarCartaoProps> = ({ onVoltar, onCr
             placeholder="Digite sua senha de 4 a 6 dígitos"
             value={senhaConfirmacao}
             onChange={(e) => setSenhaConfirmacao(e.target.value)}
-            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+            disabled={isSubmitting}
+            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', cursor: isSubmitting ? 'not-allowed' : 'text' }}
           />
         </div>
 
-        <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1rem' }}>
-          Confirmar Solicitação
+        {error && <p style={{ color: 'var(--danger)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</p>}
+
+        <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' }} disabled={isSubmitting}>
+          {isSubmitting ? 'A processar solicitação...' : 'Confirmar Solicitação'}
         </button>
       </form>
     </div>
