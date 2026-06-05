@@ -1,18 +1,19 @@
 package br.uff.ic.mmbank.controller;
 
-import br.uff.ic.mmbank.dto.AutenticacaoRequestDto;
-import br.uff.ic.mmbank.dto.LoginResponseDto;
-import br.uff.ic.mmbank.security.AutenticacaoStrategy;
-import jakarta.validation.Valid;
-import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.uff.ic.mmbank.dto.AutenticacaoRequestDto;
+import br.uff.ic.mmbank.dto.LoginResponseDto;
+import br.uff.ic.mmbank.security.AutenticacaoStrategy;
+import jakarta.validation.Valid;
+
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/auth")
 public class AuthController {
 
