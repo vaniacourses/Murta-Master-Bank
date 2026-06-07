@@ -22,4 +22,6 @@ public interface ContaRepository extends JpaRepository<Conta, Long> { // Tempor√
     Optional<Conta> findByNumeroContaForUpdate(@Param("numeroConta") String numeroConta);
 
     Optional<Conta> findByNumeroConta(String numeroConta);
+
+    Optional<Conta> findByClienteId(Long clienteId);
 }
