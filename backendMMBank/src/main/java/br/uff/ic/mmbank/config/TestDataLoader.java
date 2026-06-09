@@ -6,7 +6,7 @@ import br.uff.ic.mmbank.model.enums.StatusConta;
 import br.uff.ic.mmbank.model.enums.TipoConta;
 import br.uff.ic.mmbank.model.enums.UserRole;
 import br.uff.ic.mmbank.repository.ContaRepository;
-import br.uff.ic.mmbank.repository.UsuarioRepository; // <-- Mudou aqui!
+import br.uff.ic.mmbank.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

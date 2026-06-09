@@ -1,6 +1,6 @@
 package br.uff.ic.mmbank.mapper;
 
-import br.uff.ic.mmbank.dto.TransferenciaResponseDto;
+import br.uff.ic.mmbank.dto.TransferenciaDto.TransferenciaResponseDto;
 import br.uff.ic.mmbank.model.Transacao;
 import br.uff.ic.mmbank.model.Transferencia;
 import org.mapstruct.Mapper;
