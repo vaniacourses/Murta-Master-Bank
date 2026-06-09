@@ -22,7 +22,7 @@ public class AutenticacaoPorSenhaStrategy implements AutenticacaoStrategy {
         Usuario usuario = usuarioRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
 
-        // compara a senha criptografada!!
+        // compara a senha criptografada!!!
         if (!passwordEncoder.matches(dto.senha(), usuario.getSenha())) {
             throw new RuntimeException("Credenciais inválidas");
         }
