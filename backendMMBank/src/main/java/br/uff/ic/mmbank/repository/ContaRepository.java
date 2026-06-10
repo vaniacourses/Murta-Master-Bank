@@ -23,6 +23,9 @@ public interface ContaRepository extends JpaRepository<Conta, Long> {
     @Query("SELECT c FROM Conta c WHERE c.id = :id")
     Optional<Conta> findByIdForUpdate(@Param("id") Long id);
 
+    Optional<Conta> findByNumeroConta(String numeroConta);
+
+    Optional<Conta> findByClienteId(Long clienteId);
     // Oculta contas Encerradas
     @Query("SELECT c FROM Conta c WHERE c.statusConta != br.uff.ic.mmbank.model.enums.StatusConta.ENCERRADA")
     List<Conta> findAll();
