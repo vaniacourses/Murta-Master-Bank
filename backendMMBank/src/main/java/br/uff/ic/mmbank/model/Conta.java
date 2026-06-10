@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "contas")
@@ -26,8 +24,8 @@ public class Conta {
     @Column(unique = true, nullable = false)
     private String numeroConta;
 
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal saldo;
+    @Column(nullable = false)
+    private BigDecimal saldo; //Tipo ideal pra saldo?
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -41,13 +39,6 @@ public class Conta {
     private LocalDateTime dataCriacao;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "cliente_id")
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
-
-    @OneToMany(
-            mappedBy = "conta",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Emprestimo> emprestimos = new ArrayList<>();
 }
