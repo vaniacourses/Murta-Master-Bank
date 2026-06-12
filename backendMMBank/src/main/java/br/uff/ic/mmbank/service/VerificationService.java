@@ -6,7 +6,6 @@ import br.uff.ic.mmbank.model.VerificationCode;
 import br.uff.ic.mmbank.model.Usuario;
 import br.uff.ic.mmbank.repository.ChavePixRepository;
 import br.uff.ic.mmbank.repository.ContaRepository;
-import br.uff.ic.mmbank.repository.UserNotFoundException;
 import br.uff.ic.mmbank.repository.UsuarioRepository;
 import br.uff.ic.mmbank.repository.VerificationCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;

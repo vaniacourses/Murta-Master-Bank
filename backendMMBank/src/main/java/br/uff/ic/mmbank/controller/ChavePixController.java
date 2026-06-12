@@ -4,6 +4,7 @@ import br.uff.ic.mmbank.dto.ChavePixRequestDto;
 import br.uff.ic.mmbank.dto.ChavePixResponseDto;
 import br.uff.ic.mmbank.model.ChavePix;
 import br.uff.ic.mmbank.service.ChavePixService;
+import br.uff.ic.mmbank.service.VerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
