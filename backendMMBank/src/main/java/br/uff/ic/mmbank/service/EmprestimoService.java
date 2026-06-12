@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -151,26 +152,47 @@ public class EmprestimoService {
             throw new RuntimeException("Parcela já foi paga");
         }
 
-        parcela.setStatus(StatusParcela.PAGO);
-        parcela.setDataPagamento(LocalDate.now());
 
-        parcelaRepository.save(parcela);
+        long contaID = parcela.getEmprestimo().getConta().getId() ;
 
-        Emprestimo emprestimo = parcela.getEmprestimo();
+        Conta conta = contaRepository.findById(contaID).orElseThrow(() ->
+                new RuntimeException("Parcela não encontrada"));
 
-        boolean todasPagas =
-                emprestimo.getParcelas()
-                        .stream()
-                        .allMatch(p ->
-                                p.getStatus() == StatusParcela.PAGO);
 
-        if (todasPagas) {
+        if (   parcela.getValor().compareTo(    conta.getSaldo()    )  > 0 ) {
 
-            emprestimo.setStatus(StatusEmprestimo.QUITADO);
+            throw new RuntimeException("Sem Saldo para pagar parcela") ;
 
-            emprestimoRepository.save(emprestimo);
+        }else {
+
+            parcela.setStatus(StatusParcela.PAGO);
+            parcela.setDataPagamento(LocalDate.now());
+
+
+
+            parcelaRepository.save(parcela);
+
+            Emprestimo emprestimo = parcela.getEmprestimo();
+
+            boolean todasPagas =
+                    emprestimo.getParcelas()
+                            .stream()
+                            .allMatch(p ->
+                                    p.getStatus() == StatusParcela.PAGO);
+
+            if (todasPagas) {
+
+                emprestimo.setStatus(StatusEmprestimo.QUITADO);
+
+                emprestimoRepository.save(emprestimo);
+            }
         }
+
+
+
     }
+
+
 
 
 
