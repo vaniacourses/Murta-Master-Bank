@@ -41,10 +41,4 @@ public class UsuarioService {
 
         return usuarioMapper.toResponseDto(usuarioSalvo);
     }
-    public List<UsuarioResponseDto> listarTodos() {
-        return usuarioRepository.findAll()
-                .stream()
-                .map(usuarioMapper::toResponseDto)
-                .collect(Collectors.toList());
-    }
 }

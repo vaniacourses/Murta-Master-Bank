@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { api } from '../../service/api';
+import { useAuth } from '../../hooks/auth/useAuth'; 
 import './Configuracoes.css';
 
 interface IUsuarioProps {
@@ -6,30 +8,33 @@ interface IUsuarioProps {
   documento: string; // CPF ou CNPJ
   email: string;
   telefone: string;
-  cep: string;
-  rua: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
+  endereco: string
 }
 
 export const Configuracoes: React.FC = () => {
+  const { utilizador } = useAuth();
   // Mock dos dados do usuário logado
   const [usuario, setUsuario] = useState<IUsuarioProps>({
-    nome: 'Gustavo Trindade Murta',
-    documento: '123.456.789-00',
-    email: 'gustavo.murta@email.com',
-    telefone: '(21) 99999-9999',
-    cep: '24020-150',
-    rua: 'Rua Passo da Pátria',
-    numero: '156',
-    complemento: 'Apto 202',
-    bairro: 'São Domingos',
-    cidade: 'Niterói',
-    estado: 'RJ'
+    nome: utilizador?.nome || '',
+    documento: utilizador?.cpf || '', // o useLogin guarda o documento na chave cpf
+    email: utilizador?.email || '',
+    telefone: utilizador?.telefone || '',
+    endereco: utilizador?.endereco || ''
   });
+
+  useEffect(() => {
+    if (utilizador) {
+      setUsuario(prev => ({
+        ...prev,
+        nome: utilizador.nome,
+        documento: utilizador.cpf || '',
+        email: utilizador.email,
+        telefone: utilizador.telefone || '',
+        endereco: utilizador.endereco || ''
+      }));
+    }
+  }, [utilizador]);
+
 
   const [senhas, setSenhas] = useState({
     atual: '',
@@ -60,9 +65,30 @@ export const Configuracoes: React.FC = () => {
     }
   };
 
-  const handleSalvarDados = (e: React.FormEvent) => {
+const handleSalvarDados = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Dados e foto atualizados com sucesso!');
+
+    if (!utilizador || !utilizador.id) {
+      alert("Erro: Não foi possível identificar o usuário logado.");
+      return;
+    }
+
+    try {
+      const payload = {
+        telefone: usuario.telefone,
+        endereco: usuario.endereco
+      };
+
+      const response = await api.put(`/clientes/${utilizador.id}`, payload);
+
+      if (response.status === 200) {
+        alert('Dados atualizados com sucesso!');
+        window.location.reload(); 
+      }
+    } catch (error) {
+      console.error("Erro ao salvar os dados:", error);
+      alert('Falha ao salvar as alterações. Verifique se o servidor está rodando.');
+    }
   };
 
   const handleAtualizarSenha = (e: React.FormEvent) => {
@@ -164,37 +190,16 @@ export const Configuracoes: React.FC = () => {
             <div className="form-section">
               <h3>Endereço</h3>
               <div className="form-row">
-                <div className="input-group">
-                  <label>CEP</label>
-                  <input type="text" name="cep" value={usuario.cep} onChange={handleInputChange} required />
-                </div>
-                <div className="input-group flex-2">
-                  <label>Rua / Avenida</label>
-                  <input type="text" name="rua" value={usuario.rua} onChange={handleInputChange} required />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Número</label>
-                  <input type="text" name="numero" value={usuario.numero} onChange={handleInputChange} required />
-                </div>
-                <div className="input-group flex-2">
-                  <label>Complemento</label>
-                  <input type="text" name="complemento" value={usuario.complemento} onChange={handleInputChange} />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Bairro</label>
-                  <input type="text" name="bairro" value={usuario.bairro} onChange={handleInputChange} required />
-                </div>
-                <div className="input-group">
-                  <label>Cidade</label>
-                  <input type="text" name="cidade" value={usuario.cidade} onChange={handleInputChange} required />
-                </div>
-                <div className="input-group">
-                  <label>Estado</label>
-                  <input type="text" name="estado" value={usuario.estado} onChange={handleInputChange} required maxLength={2} />
+                <div className="input-group full-width">
+                  <label>Endereço Completo</label>
+                  <input 
+                    type="text" 
+                    name="endereco" 
+                    value={usuario.endereco} 
+                    onChange={handleInputChange} 
+                    placeholder="Rua, Número, Bairro, Cidade - UF, CEP" 
+                    required 
+                  />
                 </div>
               </div>
             </div>

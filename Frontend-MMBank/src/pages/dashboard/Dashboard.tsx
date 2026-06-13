@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -32,13 +33,15 @@ const recentTransactions = [
 
 export const Dashboard: React.FC = () => {
   const [periodo, setPeriodo] = useState<'dia' | 'mes' | 'ano' | 'custom'>('ano');
+  const { utilizador } = useAuth();
+  const primeiroNome = utilizador?.nome?.split(' ')[0] || 'Cliente';
 
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div>
           <h1>Visão Geral</h1>
-          <p>Bem-vindo de volta, Murta. Aqui está o resumo da sua movimentação.</p>
+          <p>Bem-vindo de volta, {primeiroNome}. Aqui está o resumo da sua movimentação.</p>
         </div>
       </header>
 

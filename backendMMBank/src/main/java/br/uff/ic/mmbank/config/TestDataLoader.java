@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Configuration
@@ -32,6 +33,13 @@ public class TestDataLoader {
 
                 cliente.setNome("Anderson Souza");
                 cliente.setRole(UserRole.ROLE_USER);
+                cliente.setDocumento("12345678900");
+                cliente.setTelefone("21999999999");
+                cliente.setEndereco("Rua da Boa Viagem, 123");
+                cliente.setGenero("m");
+                cliente.setProfissao("Assalariado");
+                cliente.setRendaMensal(new BigDecimal("5000.00"));
+                cliente.setDataNascimento(LocalDate.of(1990, 5, 15));
 
                 cliente = usuarioRepository.save(cliente);
 
