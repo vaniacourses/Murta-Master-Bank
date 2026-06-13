@@ -1,7 +1,7 @@
 package br.uff.ic.mmbank.controller;
 
-import br.uff.ic.mmbank.dto.TransferenciaRequestDto;
-import br.uff.ic.mmbank.dto.TransferenciaResponseDto;
+import br.uff.ic.mmbank.dto.TransferenciaDto.TransferenciaRequestDto;
+import br.uff.ic.mmbank.dto.TransferenciaDto.TransferenciaResponseDto;
 import br.uff.ic.mmbank.model.enums.TipoTransacao;
 import br.uff.ic.mmbank.service.TransferenciaService;
 import org.springframework.beans.factory.annotation.Autowired;
