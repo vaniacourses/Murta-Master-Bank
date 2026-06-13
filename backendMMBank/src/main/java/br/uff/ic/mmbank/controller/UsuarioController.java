@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
@@ -24,13 +25,5 @@ public class UsuarioController {
 
         // retorna http 201
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<UsuarioResponseDto>> listarTodos() {
-        List<UsuarioResponseDto> response = usuarioService.listarTodos();
-
-        // retorna http 200
-        return ResponseEntity.ok(response);
     }
 }

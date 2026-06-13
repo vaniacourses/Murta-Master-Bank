@@ -17,14 +17,15 @@ export interface LoginResponseDTO {
 }
 
 export interface TransferenciaRequestDTO {
-  contaDestino: string;
-  agenciaDestino: string;
+  contaOrigemId: number;
+  contaDestinoId: number;
   valor: number;
 }
 
 export interface TransferenciaResponseDTO {
-  id: string;
-  dataHora: string;
-  status: 'CONCLUIDA' | 'FALHA' | 'PENDENTE';
-  comprovante: string;
+  id: number;
+  data: string;
+  valor: number;
+  numeroContaOrigem: string;
+  numeroContaDestino: string;
 }

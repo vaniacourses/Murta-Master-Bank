@@ -6,5 +6,7 @@ public record UsuarioResponseDto(
         Long id,
         String nome,
         String email,
-        UserRole role
+        UserRole role,
+        String documento,
+        String telefone
 ) {}
