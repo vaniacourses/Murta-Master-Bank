@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Transferencias.css';
 import { transferenciaService } from '../../service/tranferenciaService';
 import type { TransferenciaResponseDTO } from '../../types/dtos';
+import { api } from '../../service/api';
 
 type ContatoPix = {
   id: number;
@@ -81,6 +82,23 @@ export const Transferencias: React.FC = () => {
   const [conta, setConta] = useState('');
   const [comprovante, setComprovante] = useState<TransferenciaResponseDTO | null>(null);
   const [descricao, setDescricao] = useState('');
+  const [saldoAtual, setSaldoAtual] = useState<number>(0);
+  const [contaOrigemId, setContaOrigemId] = useState<number>(0);
+  const [atualizador, setAtualizador] = useState<number>(0);
+
+  useEffect(() => {
+    const buscarDadosDaConta = async () => {
+      try {
+        const response = await api.get('/contas/minha');
+        setSaldoAtual(response.data.saldo);
+        setContaOrigemId(response.data.id);
+      } catch (error) {
+        console.error("Erro ao buscar a conta:", error);
+      }
+    };
+
+    buscarDadosDaConta();
+  }, [atualizador]);
 
   const handleContatoClick = (id: number) => {
     const contato = contatosRecentes.find(c => c.id === id);
@@ -119,11 +137,10 @@ export const Transferencias: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const destinoId = metodo === 'pix' ? Number(chavePix) : Number(conta);
 
       const dadosEnvio = {
-        contaOrigemId: 1,
-        contaDestinoId: destinoId, 
+        contaOrigemId: contaOrigemId,
+        contaDestinoId: null,
         valor: valorConvertido,
         chavePix: metodo === 'pix' ? chavePix : undefined,
         cpfCnpj: metodo === 'ted' ? chavePix : undefined,
@@ -142,6 +159,7 @@ export const Transferencias: React.FC = () => {
       }
 
       setComprovante(resposta);
+      setAtualizador(prev => prev + 1);
       
     } catch (error) {
       console.error(error);
@@ -258,7 +276,11 @@ export const Transferencias: React.FC = () => {
                     required
                   />
                 </div>
-                <span className="balance-hint">Saldo disponível: <strong>R$ 24.780,50</strong></span>
+                <span className="balance-hint">
+                  Saldo disponível: <strong>
+                    {saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </strong>
+                </span>
               </div>
 
               <div className="form-fields">
@@ -288,6 +310,7 @@ export const Transferencias: React.FC = () => {
                         <option value="104">Caixa Econômica</option>
                         <option value="237">Bradesco</option>
                         <option value="341">Itaú</option>
+                        <option value="MMBank">MMBank</option>
                       </select>
                     </div>
                     <div className="input-block">

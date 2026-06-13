@@ -18,8 +18,15 @@ export interface LoginResponseDTO {
 
 export interface TransferenciaRequestDTO {
   contaOrigemId: number;
-  contaDestinoId: number;
+  contaDestinoId?: number | null;
   valor: number;
+  chavePix?: string;
+  cpfCnpj?: string;
+  banco?: string;
+  agencia?: string;
+  conta?: string;
+  tipoEnvio?: string;
+  descricao?: string;
 }
 
 export interface TransferenciaResponseDTO {

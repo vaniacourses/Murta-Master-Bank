@@ -6,15 +6,11 @@ import br.uff.ic.mmbank.dto.TransferenciaDto.TransferenciaRequestDto;
 import br.uff.ic.mmbank.dto.TransferenciaDto.TransferenciaResponseDto;
 import br.uff.ic.mmbank.factory.TransacaoFactory;
 import br.uff.ic.mmbank.gateway.BacenGateway;
-import br.uff.ic.mmbank.gateway.bacen.BacenOrdemPagamentoRequest;
-import br.uff.ic.mmbank.gateway.bacen.BacenOrdemPagamentoResponse;
 import br.uff.ic.mmbank.mapper.TransferenciaMapper;
-import br.uff.ic.mmbank.model.Conta;
-import br.uff.ic.mmbank.model.NotaFiscal;
-import br.uff.ic.mmbank.model.Transacao;
-import br.uff.ic.mmbank.model.Transferencia;
+import br.uff.ic.mmbank.model.*;
 import br.uff.ic.mmbank.model.enums.StatusNotaFiscal;
 import br.uff.ic.mmbank.model.enums.TipoTransacao;
+import br.uff.ic.mmbank.repository.ChavePixRepository;
 import br.uff.ic.mmbank.repository.ContaRepository;
 import br.uff.ic.mmbank.repository.NotaFiscalRepository;
 import br.uff.ic.mmbank.repository.TransferenciaRepository;
@@ -26,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +36,7 @@ public class TransferenciaService {
     private final TransferenciaMapper transferenciaMapper;
     private final NotaFiscalRepository notaFiscalRepository;
     private final BacenGateway bacenGateway;
+    private final ChavePixRepository chavePixRepository;
 
     @Autowired
     public TransferenciaService(ContaRepository contaRepository,
@@ -46,7 +44,9 @@ public class TransferenciaService {
                                 TransacaoFactory transacaoFactory,
                                 TransferenciaStrategyResolver strategyResolver,
                                 TransferenciaMapper transferenciaMapper,
-                                NotaFiscalRepository notaFiscalRepository, BacenGateway bacenGateway) {
+                                NotaFiscalRepository notaFiscalRepository,
+                                BacenGateway bacenGateway,
+                                ChavePixRepository chavePixRepository) {
         this.contaRepository = contaRepository;
         this.transferenciaRepository = transferenciaRepository;
         this.transacaoFactory = transacaoFactory;
@@ -54,6 +54,7 @@ public class TransferenciaService {
         this.transferenciaMapper = transferenciaMapper;
         this.notaFiscalRepository = notaFiscalRepository;
         this.bacenGateway = bacenGateway;
+        this.chavePixRepository = chavePixRepository;
     }
 
     @Transactional
@@ -61,8 +62,19 @@ public class TransferenciaService {
         Conta contaOrigem = contaRepository.findByIdForUpdate(dto.contaOrigemId())
                 .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada."));
 
-        Conta contaDestino = contaRepository.findByIdForUpdate(dto.contaDestinoId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
+        Conta contaDestino = null;
+        boolean isTransferenciaInterna = "MMBank".equalsIgnoreCase(dto.banco());
+
+        if (isTransferenciaInterna) {
+            if (tipo == TipoTransacao.PIX_ENVIADO) {
+                ChavePix chaveEntidade = chavePixRepository.findByChave(dto.chavePix())
+                        .orElseThrow(() -> new IllegalArgumentException("Chave Pix não encontrada no MMBank."));
+                contaDestino = chaveEntidade.getConta();
+            } else {
+                contaDestino = contaRepository.findByNumeroContaForUpdate(dto.conta())
+                        .orElseThrow(() -> new IllegalArgumentException("A conta destino número " + dto.conta() + " não existe no MMBank."));
+            }
+        }
 
         TransferenciaStrategy strategy = strategyResolver.getStrategy(tipo);
         strategy.validar(contaOrigem, contaDestino, dto.valor());
@@ -71,46 +83,53 @@ public class TransferenciaService {
         BigDecimal totalDebitoOrigem = dto.valor().add(taxa);
 
         contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(totalDebitoOrigem));
-        contaDestino.setSaldo(contaDestino.getSaldo().add(dto.valor()));
+        contaRepository.save(contaOrigem);
 
         Transacao debito = transacaoFactory.criarTransacaoSaida(contaOrigem, dto.valor(), tipo);
-        Transacao credito = transacaoFactory.criarTransacaoEntrada(contaDestino, dto.valor(), tipo);
+        List<Transacao> transacoesDaTransferencia = new ArrayList<>();
+        transacoesDaTransferencia.add(debito);
+
+        if (isTransferenciaInterna) {
+            contaDestino.setSaldo(contaDestino.getSaldo().add(dto.valor()));
+            contaRepository.save(contaDestino);
+
+            Transacao credito = transacaoFactory.criarTransacaoEntrada(contaDestino, dto.valor(), tipo);
+            transacoesDaTransferencia.add(credito);
+        }
+
 
         Transferencia transferencia = Transferencia.builder()
                 .contaOrigem(contaOrigem)
                 .contaDestino(contaDestino)
-                .transacoes(List.of(debito, credito))
+                .transacoes(transacoesDaTransferencia)
                 .chavePixUtilizada(dto.chavePix())
                 .cpfCnpjFavorecido(dto.cpfCnpj())
                 .bancoFavorecido(dto.banco())
                 .agenciaFavorecida(dto.agencia())
                 .contaFavorecida(dto.conta())
                 .tipoEnvio(dto.tipoEnvio())
-                .dataAgendamento(dto.dataPagamento())
                 .descricao(dto.descricao())
                 .build();
 
-        contaRepository.save(contaOrigem);
-        contaRepository.save(contaDestino);
         Transferencia salva = transferenciaRepository.save(transferencia);
 
         NotaFiscal notaFiscal = new NotaFiscal();
         notaFiscal.setValor(dto.valor());
         notaFiscal.setDataEmissao(LocalDate.now());
         notaFiscal.setConta(contaOrigem);
-
         notaFiscal.setChaveAcesso(java.util.UUID.randomUUID().toString());
+
         String textoDescricao = (dto.descricao() != null && !dto.descricao().isBlank())
                 ? dto.descricao()
-                : "Transferência enviada para a conta " + contaDestino.getNumeroConta();
+                : (isTransferenciaInterna
+                ? "Transferência enviada para a conta " + contaDestino.getNumeroConta()
+                : "Transferência externa enviada para " + dto.banco());
 
         notaFiscal.setDescricao(textoDescricao);
         notaFiscal.setStatus(StatusNotaFiscal.EMITIDO);
-
         notaFiscalRepository.save(notaFiscal);
 
         if (tipo == TipoTransacao.PIX_ENVIADO) {
-
             PixTransferenciaRequestDto pixRequest = new PixTransferenciaRequestDto(
                     contaOrigem.getId(),
                     dto.chavePix(),
@@ -131,7 +150,6 @@ public class TransferenciaService {
     public TransferenciaResponseDto buscarPorId(Long id) {
         Transferencia tf = transferenciaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Transferência não encontrada."));
-
         return transferenciaMapper.toResponseDto(tf);
     }
 
