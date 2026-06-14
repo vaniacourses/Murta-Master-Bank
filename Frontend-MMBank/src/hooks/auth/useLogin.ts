@@ -8,6 +8,9 @@ interface BackendUser {
   nome: string;
   email: string;
   role: string;
+  documento?: string;
+  telefone?: string;
+  endereco?: string; // <-- Adicionado
 }
 
 export const useLogin = () => {
@@ -32,8 +35,7 @@ export const useLogin = () => {
 
             try {
                 // Como o endpoint /usuarios é público/permitAll no backend, listamos os usuários
-                const usersResponse = await api.get<BackendUser[]>('/usuarios');
-                matchedUser = usersResponse.data.find(
+                const usersResponse = await api.get<BackendUser[]>('/clientes');                matchedUser = usersResponse.data.find(
                     (u) => u.email.toLowerCase() === email.toLowerCase()
                 );
             } catch (err) {
@@ -46,6 +48,8 @@ export const useLogin = () => {
                 nome: matchedUser?.nome || 'Utilizador MMBank',
                 email: matchedUser?.email || email,
                 cpf: '123.456.789-00', // Mock/default CPF (não existe na tabela usuarios do backend)
+                telefone: matchedUser?.telefone || '',
+                endereco: matchedUser?.endereco || '', 
                 tipo: matchedUser?.role === 'ROLE_ADMIN' ? 'PJ' : 'PF' // Define o tipo de acordo com a role
             };
 

@@ -1,4 +1,4 @@
-package br.uff.ic.mmbank.dto;
+package br.uff.ic.mmbank.dto.TransferenciaDto;
 
 import lombok.Builder;
 

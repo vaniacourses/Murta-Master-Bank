@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './Transferencias.css';
+import { transferenciaService } from '../../service/tranferenciaService';
+import type { TransferenciaResponseDTO } from '../../types/dtos';
 
 type ContatoPix = {
   id: number;
@@ -69,6 +71,7 @@ export const Transferencias: React.FC = () => {
   const [contatoSelecionado, setContatoSelecionado] = useState<number | null>(null);
   const [valor, setValor] = useState<string>('');
   const [tipoEnvio, setTipoEnvio] = useState<'agora' | 'agendado'>('agora');
+  const [isLoading, setIsLoading] = useState(false);
 
 
   //
@@ -76,6 +79,8 @@ export const Transferencias: React.FC = () => {
   const [banco, setBanco] = useState('');
   const [agencia, setAgencia] = useState('');
   const [conta, setConta] = useState('');
+  const [comprovante, setComprovante] = useState<TransferenciaResponseDTO | null>(null);
+  const [descricao, setDescricao] = useState('');
 
   const handleContatoClick = (id: number) => {
     const contato = contatosRecentes.find(c => c.id === id);
@@ -101,13 +106,49 @@ export const Transferencias: React.FC = () => {
     }
   };
 
-  const handleTransferir = (e: React.FormEvent) => {
+  const handleTransferir = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valor || valor === '0' || valor === '0,00') {
-      alert('Por favor, insira um valor válido.');
+    
+    const valorConvertido = parseFloat(valor.replace(',', '.'));
+
+    if (!valorConvertido || valorConvertido <= 0) {
+      alert('Por favor, insira um valor válido maior que zero.');
       return;
     }
-    alert(`Transferência via ${metodo.toUpperCase()} no valor de R$ ${valor} enviada para processamento!`);
+
+    setIsLoading(true);
+
+    try {
+      const destinoId = metodo === 'pix' ? Number(chavePix) : Number(conta);
+
+      const dadosEnvio = {
+        contaOrigemId: 1,
+        contaDestinoId: destinoId, 
+        valor: valorConvertido,
+        chavePix: metodo === 'pix' ? chavePix : undefined,
+        cpfCnpj: metodo === 'ted' ? chavePix : undefined,
+        banco: metodo === 'ted' ? banco : undefined,
+        agencia: metodo === 'ted' ? agencia : undefined,
+        conta: metodo === 'ted' ? conta : undefined,
+        tipoEnvio: tipoEnvio,
+        descricao: descricao
+      };
+
+      let resposta;
+      if (metodo === 'pix') {
+        resposta = await transferenciaService.realizarPix(dadosEnvio);
+      } else {
+        resposta = await transferenciaService.realizar(dadosEnvio);
+      }
+
+      setComprovante(resposta);
+      
+    } catch (error) {
+      console.error(error);
+      alert('Erro na transferência. Verifique se você tem saldo e se o ID de destino existe!');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,104 +222,129 @@ export const Transferencias: React.FC = () => {
 
         {/* COLUNA DIREITA: Formulário de Envio */}
         <div className="transfer-form-panel">
-          <form className="transfer-form-card" onSubmit={handleTransferir}>
-            
-            <div className="amount-input-group">
-              <label>Valor da Transferência</label>
-              <div className="amount-wrapper">
-                <span className="currency-symbol">R$</span>
-                <input 
-                  type="number" 
-                  placeholder="0,00" 
-                  value={valor}
-                  onChange={(e) => setValor(e.target.value)}
-                  step="0.01"
-                  min="0"
-                  required
-                />
+          {comprovante ? (
+            <div className="transfer-form-card" style={{ textAlign: 'center' }}>
+              <h2 style={{ color: '#10b981' }}>Transferência Realizada!</h2>
+              <br/>
+              <div style={{ backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '8px', textAlign: 'left' }}>
+                <p><strong>ID do Comprovante:</strong> {comprovante.id}</p>
+                <p><strong>Data:</strong> {new Date(comprovante.data).toLocaleString()}</p>
+                <p><strong>Valor:</strong> R$ {comprovante.valor.toFixed(2)}</p>
+                <p><strong>Sua Conta:</strong> {comprovante.numeroContaOrigem}</p>
+                <p><strong>Conta Destino:</strong> {comprovante.numeroContaDestino}</p>
               </div>
-              <span className="balance-hint">Saldo disponível: <strong>R$ 24.780,50</strong></span>
+              <br/>
+              <button 
+                className="btn-submit-transfer" 
+                onClick={() => {
+                  setComprovante(null);
+                  setValor('');
+                }}>
+                Fazer nova transferência
+              </button>
             </div>
-
-            <div className="form-fields">
-              <div className="input-block">
-                <label>{metodo === 'pix' ? 'Chave Pix' : 'CPF/CNPJ do Favorecido'}</label>
-                <input
-                  type="text"
-                  value={chavePix}
-                  onChange={(e) => setChavePix(e.target.value)}
-                  placeholder={
-                    metodo === 'pix'
-                      ? 'E-mail, CPF, Telefone ou Aleatória'
-                      : '000.000.000-00'
-                  }
-                  required
-                />
-              </div>
-
-              {metodo === 'ted' && (
-                <div className="bank-details-row">
-                  <div className="input-block">
-                    <label>Banco</label>
-                    <select value={banco} onChange={(e) => setBanco(e.target.value)} required>
-                      <option value="">Selecione</option>
-                      <option value="001">Banco do Brasil</option>
-                      <option value="033">Santander</option>
-                      <option value="104">Caixa Econômica</option>
-                      <option value="237">Bradesco</option>
-                      <option value="341">Itaú</option>
-                    </select>
-                  </div>
-                  <div className="input-block">
-                    <label>Agência</label>
-                    <input type="text"
-                      value={agencia}
-                      onChange={(e) => setAgencia(e.target.value)}
-                      placeholder="0000"
-                      required
-                    />
-                  </div>
-                  <div className="input-block">
-                    <label>Conta</label>
-                    <input 
-                      type="text"
-                      value={conta}
-                      onChange={(e) => setConta(e.target.value)}
-                      placeholder="00000-0"
-                      required
-                    />
-                  </div>
+          ) : (
+            <form className="transfer-form-card" onSubmit={handleTransferir}>
+              
+              <div className="amount-input-group">
+                <label>Valor da Transferência</label>
+                <div className="amount-wrapper">
+                  <span className="currency-symbol">R$</span>
+                  <input 
+                    type="text" 
+                    placeholder="0,00" 
+                    value={valor}
+                    onChange={(e) => setValor(e.target.value)}
+                    required
+                  />
                 </div>
-              )}
-
-              <div className="input-block">
-                <label>Quando enviar?</label>
-                <select
-                  value={tipoEnvio}
-                  onChange={(e) => setTipoEnvio(e.target.value as 'agora' | 'agendado')}
-                >
-                  <option value="agora">Enviar agora</option>
-                  <option value="agendado">Agendar</option>
-                </select>
+                <span className="balance-hint">Saldo disponível: <strong>R$ 24.780,50</strong></span>
               </div>
-                        
-              {tipoEnvio === 'agendado' && (
+
+              <div className="form-fields">
                 <div className="input-block">
-                  <label>Data de Pagamento</label>
-                  <input type="date" required />
+                  <label>{metodo === 'pix' ? 'Chave Pix' : 'CPF/CNPJ do Favorecido'}</label>
+                  <input
+                    type="text"
+                    value={chavePix}
+                    onChange={(e) => setChavePix(e.target.value)}
+                    placeholder={
+                      metodo === 'pix'
+                        ? 'E-mail, CPF, Telefone ou Aleatória'
+                        : '000.000.000-00'
+                    }
+                    required
+                  />
                 </div>
-              )}
 
-              <div className="input-block">
-                <label>Descrição (Opcional)</label>
-                <input type="text" placeholder="Ex: Aluguel, Rachar pizza..." maxLength={140} />
+                {metodo === 'ted' && (
+                  <div className="bank-details-row">
+                    <div className="input-block">
+                      <label>Banco</label>
+                      <select value={banco} onChange={(e) => setBanco(e.target.value)} required>
+                        <option value="">Selecione</option>
+                        <option value="001">Banco do Brasil</option>
+                        <option value="033">Santander</option>
+                        <option value="104">Caixa Econômica</option>
+                        <option value="237">Bradesco</option>
+                        <option value="341">Itaú</option>
+                      </select>
+                    </div>
+                    <div className="input-block">
+                      <label>Agência</label>
+                      <input type="text"
+                        value={agencia}
+                        onChange={(e) => setAgencia(e.target.value)}
+                        placeholder="0000"
+                        required
+                      />
+                    </div>
+                    <div className="input-block">
+                      <label>Conta</label>
+                      <input 
+                        type="text"
+                        value={conta}
+                        onChange={(e) => setConta(e.target.value)}
+                        placeholder="00000-0"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="input-block">
+                  <label>Quando enviar?</label>
+                  <select
+                    value={tipoEnvio}
+                    onChange={(e) => setTipoEnvio(e.target.value as 'agora' | 'agendado')}
+                  >
+                    <option value="agora">Enviar agora</option>
+                    <option value="agendado">Agendar</option>
+                  </select>
+                </div>
+                          
+                {tipoEnvio === 'agendado' && (
+                  <div className="input-block">
+                    <label>Data de Pagamento</label>
+                    <input type="date" required />
+                  </div>
+                )}
+
+                <div className="input-block">
+                  <label>Descrição (Opcional)</label>
+                  <input type="text" placeholder="Ex: Aluguel, Rachar pizza..."
+                  maxLength={140} 
+                  value={descricao}
+                  onChange={(e) => setDescricao(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
 
-            <button type="submit" className="btn-submit-transfer">
-              Revisar Transferência
-            </button>
-          </form>
+              <button type="submit" className="btn-submit-transfer" disabled={isLoading}>
+                {isLoading ? 'Processando...' : 'Revisar Transferência'}
+              </button>
+            </form>
+          )}
         </div>
 
       </div>

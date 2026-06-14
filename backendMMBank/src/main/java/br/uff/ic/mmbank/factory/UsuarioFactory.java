@@ -18,6 +18,13 @@ public class UsuarioFactory {
         } else if (dto.role() == UserRole.ROLE_USER) {
             Cliente cliente = new Cliente();
             preencherDadosBasicos(cliente, dto, senhaCriptografada);
+            cliente.setDocumento(dto.documento());
+            cliente.setDataNascimento(dto.dataNascimento());
+            cliente.setTelefone(dto.telefone());
+            cliente.setEndereco(dto.endereco());
+            cliente.setRendaMensal(dto.rendaMensal());
+            cliente.setGenero(dto.genero());
+            cliente.setProfissao(dto.profissao());
             return cliente;
         }
         throw new IllegalArgumentException("Role inválida");
