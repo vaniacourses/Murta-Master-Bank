@@ -19,7 +19,7 @@ interface BackendEmprestimo {
   quantidadeParcelas: number;
   dataInicio: string;
   status: StatusEmprestimo;
-  parcelas: BackendParcela[];
+  parcelas?: BackendParcela[] | null;
 }
 
 export interface Parcela {
@@ -48,8 +48,8 @@ export interface CriarEmprestimoPayload {
   contaId: number;
 }
 
-const calcularValorParcelas = (parcelas: BackendParcela[]) => {
-  if (!parcelas.length) {
+const calcularValorParcelas = (parcelas?: BackendParcela[] | null) => {
+  if (!parcelas?.length) {
     return 0;
   }
 

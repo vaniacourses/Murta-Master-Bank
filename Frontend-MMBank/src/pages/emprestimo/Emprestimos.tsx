@@ -64,9 +64,10 @@ export const Emprestimos: React.FC = () => {
       await emprestimoService.pagarParcela(parcelaId);
       await carregarEmprestimos();
       alert('Parcela paga com sucesso!');
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error('Erro ao pagar parcela:', err);
-      setError('Não foi possível pagar a parcela. Verifique seu saldo e tente novamente.');
+      const msg = err?.response?.data?.message || err?.response?.data || 'Não foi possível pagar a parcela. Verifique seu saldo e tente novamente.';
+      alert(msg);
     } finally {
       setIsPaying(false);
     }
@@ -95,7 +96,7 @@ export const Emprestimos: React.FC = () => {
               <p>Gerencie seus contratos e simule novas opções de crédito.</p>
             </div>
             <button className="btn-primary" onClick={() => setView('NOVO')}>
-              Simular Empréstimo
+              Contratar Empréstimo
             </button>
           </header>
 

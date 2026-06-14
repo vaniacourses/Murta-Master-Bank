@@ -8,6 +8,8 @@ interface EmprestimoProps {
 }
 
 export const Emprestimo: React.FC<EmprestimoProps> = ({ emprestimo, onVoltar, onPagarParcela }) => {
+  const possuiParcelas = emprestimo.parcelas.length > 0;
+
   return (
     <>
       <header className="emprestimos-header">
@@ -32,6 +34,8 @@ export const Emprestimo: React.FC<EmprestimoProps> = ({ emprestimo, onVoltar, on
           <h3>Cronograma de Parcelas</h3>
           {emprestimo.status !== 'ATIVO' ? (
             <p className="empty-state">As parcelas serão geradas após a aprovação do empréstimo.</p>
+          ) : !possuiParcelas ? (
+            <p className="empty-state">Este contrato ainda não possui parcelas disponíveis.</p>
           ) : (
             <div className="parcelas-list">
               {emprestimo.parcelas.map(parcela => (
