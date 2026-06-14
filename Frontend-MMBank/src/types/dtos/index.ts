@@ -1,5 +1,3 @@
-// Baseado no pacote DTO do seu diagrama de classes
-
 export interface AutenticacaoRequestDTO {
   email: string;
   senha: string;
@@ -34,5 +32,12 @@ export interface TransferenciaResponseDTO {
   data: string;
   valor: number;
   numeroContaOrigem: string;
-  numeroContaDestino: string;
+  numeroContaDestino?: string | null; 
+  chavePixUtilizada?: string | null;
+  cpfCnpjFavorecido?: string | null;
+  bancoFavorecido?: string | null;
+  agenciaFavorecida?: string | null;
+  contaFavorecida?: string | null;
+  tipoEnvio?: string | null;
+  descricao?: string | null;
 }

@@ -25,47 +25,8 @@ type ContatoTed = {
   cor: string;
 };
 
-// --- Mocks de Dados ---
 type Contato = ContatoPix | ContatoTed;
 
-// --- Mocks de Dados ---
-const contatosRecentes: Contato[] = [
-  {
-    id: 1,
-    nome: 'Ana Costa',
-    tipo: 'pix',
-    chave: 'ana@email.com',
-    iniciais: 'AC',
-    cor: '#3b82f6'
-  },
-  {
-    id: 2,
-    nome: 'Carlos Silva',
-    tipo: 'pix',
-    chave: '11999998888',
-    iniciais: 'CS',
-    cor: '#10b981'
-  },
-  {
-    id: 3,
-    nome: 'Empresa XYZ',
-    tipo: 'ted',
-    cpfCnpj: '12.345.678/0001-99',
-    banco: '341',
-    agencia: '1234',
-    conta: '56789-0',
-    iniciais: 'EX',
-    cor: '#8b5cf6'
-  },
-  {
-    id: 4,
-    nome: 'João Souza',
-    tipo: 'pix',
-    chave: 'joao.souza@pix',
-    iniciais: 'JS',
-    cor: '#f59e0b'
-  }
-];
 
 export const Transferencias: React.FC = () => {
   const [metodo, setMetodo] = useState<'pix' | 'ted'>('pix');
@@ -85,19 +46,61 @@ export const Transferencias: React.FC = () => {
   const [saldoAtual, setSaldoAtual] = useState<number>(0);
   const [contaOrigemId, setContaOrigemId] = useState<number>(0);
   const [atualizador, setAtualizador] = useState<number>(0);
+  const [contatosRecentes, setContatosRecentes] = useState<Contato[]>([]);
 
   useEffect(() => {
-    const buscarDadosDaConta = async () => {
+    const carregarDados = async () => {
       try {
-        const response = await api.get('/contas/minha');
-        setSaldoAtual(response.data.saldo);
-        setContaOrigemId(response.data.id);
+        const resConta = await api.get('/contas/minha');
+        const idConta = resConta.data.id;
+        setSaldoAtual(resConta.data.saldo);
+        setContaOrigemId(idConta);
+
+        const resTransf = await api.get(`/transferencias/conta/${idConta}`);
+        const historico = resTransf.data;
+
+        const contatosUnicos: Contato[] = [];
+        const chavesVistas = new Set();
+
+        historico.reverse().forEach((t: TransferenciaResponseDTO) => {
+          const identificador = t.chavePixUtilizada || t.contaFavorecida || t.numeroContaDestino;
+
+          if (identificador && !chavesVistas.has(identificador)) {
+            chavesVistas.add(identificador);
+            
+            if (t.chavePixUtilizada) {
+              contatosUnicos.push({
+                id: t.id,
+                nome: 'Contato Pix',
+                tipo: 'pix',
+                chave: t.chavePixUtilizada,
+                iniciais: 'PX',
+                cor: '#3b82f6'
+              });
+            } else if (t.bancoFavorecido || t.numeroContaDestino) {
+              contatosUnicos.push({
+                id: t.id,
+                nome: t.bancoFavorecido || 'Conta Interna',
+                tipo: 'ted',
+                cpfCnpj: t.cpfCnpjFavorecido || '',
+                banco: t.bancoFavorecido || 'MMBank',
+                agencia: t.agenciaFavorecida || '0001',
+                conta: t.contaFavorecida || t.numeroContaDestino || '',
+                iniciais: 'TD',
+                cor: '#10b981'
+              });
+            }
+          }
+        });
+
+        setContatosRecentes(contatosUnicos.slice(0, 4));
+
       } catch (error) {
-        console.error("Erro ao buscar a conta:", error);
+        console.error("Erro ao carregar dados:", error);
       }
     };
 
-    buscarDadosDaConta();
+    carregarDados();
   }, [atualizador]);
 
   const handleContatoClick = (id: number) => {
