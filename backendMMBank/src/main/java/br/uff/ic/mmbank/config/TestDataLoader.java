@@ -3,12 +3,11 @@ package br.uff.ic.mmbank.config;
 import br.uff.ic.mmbank.model.ChavePix;
 import br.uff.ic.mmbank.model.Cliente;
 import br.uff.ic.mmbank.model.Conta;
-import br.uff.ic.mmbank.model.enums.StatusConta;
-import br.uff.ic.mmbank.model.enums.TipoChavePix;
-import br.uff.ic.mmbank.model.enums.TipoConta;
-import br.uff.ic.mmbank.model.enums.UserRole;
+import br.uff.ic.mmbank.model.Transacao;
+import br.uff.ic.mmbank.model.enums.*;
 import br.uff.ic.mmbank.repository.ChavePixRepository;
 import br.uff.ic.mmbank.repository.ContaRepository;
+import br.uff.ic.mmbank.repository.TransacaoRepository;
 import br.uff.ic.mmbank.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -17,14 +16,16 @@ import org.springframework.context.annotation.Configuration;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 public class TestDataLoader {
 
     @Bean
-    CommandLineRunner initDatabase(ContaRepository contaRepository,
+    CommandLineRunner initDatabase(ContaRepository contaRepository, 
                                    UsuarioRepository usuarioRepository,
-                                   ChavePixRepository chavePixRepository) {
+                                   ChavePixRepository chavePixRepository,
+                                   TransacaoRepository transacaoRepository) {
         return args -> {
             if (contaRepository.count() == 0) {
 
@@ -91,7 +92,83 @@ public class TestDataLoader {
                 pixAna.setDataCriacao(LocalDateTime.now());
                 chavePixRepository.save(pixAna);
 
-                System.out.println("CONTAS E CHAVES PIX DE TESTE CRIADAS COM SUCESSO");
+                Transacao transacao1 = Transacao.builder()
+                        .tipo(TipoTransacao.PIX_RECEBIDO)
+                        .valor(new BigDecimal("1500.00"))
+                        .data(LocalDateTime.now().minusDays(2))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Receitas")
+                        .endToEndId("E12345678202606140000abcde123456")
+                        .ispbDestino("99999999")
+                        .build();
+
+                Transacao transacao2 = Transacao.builder()
+                        .tipo(TipoTransacao.COMPRA_DEBITO)
+                        .valor(new BigDecimal("45.90"))
+                        .data(LocalDateTime.now().minusDays(1))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
+                Transacao transacao3 = Transacao.builder()
+                        .tipo(TipoTransacao.COMPRA_CREDITO)
+                        .valor(new BigDecimal("2100.00"))
+                        .data(LocalDateTime.now()) // Agora
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Moradia")
+                        .build();
+
+                Transacao transacao4 = Transacao.builder()
+                        .tipo(TipoTransacao.PIX_RECEBIDO)
+                        .valor(new BigDecimal("1237.00"))
+                        .data(LocalDateTime.now().minusDays(3))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
+                Transacao transacao5 = Transacao.builder()
+                        .tipo(TipoTransacao.PIX_RECEBIDO)
+                        .valor(new BigDecimal("10.00"))
+                        .data(LocalDateTime.now().minusDays(4))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
+                Transacao transacao6 = Transacao.builder()
+                        .tipo(TipoTransacao.PIX_RECEBIDO)
+                        .valor(new BigDecimal("400.00"))
+                        .data(LocalDateTime.now().minusDays(5))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
+                Transacao transacao7 = Transacao.builder()
+                        .tipo(TipoTransacao.PIX_RECEBIDO)
+                        .valor(new BigDecimal("100.00"))
+                        .data(LocalDateTime.now().minusDays(6))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
+                transacaoRepository.saveAll(List.of(transacao1, transacao2, transacao3,
+                                                    transacao4, transacao5, transacao6,
+                                                    transacao7));
+
+                System.out.println("CONTAS, CHAVES PIX E TRANSAÇÕES DE TESTE CRIADAS COM SUCESSO!");
             }
         };
     }
