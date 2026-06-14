@@ -19,7 +19,7 @@ Cadastra uma nova chave Pix para a conta autenticada.
 ```json
 {
   "tipo": "CPF",
-  "valor": "123.456.789-00"
+  "chave": "123.456.789-00"
 }
 ```
 
@@ -36,8 +36,9 @@ Cadastra uma nova chave Pix para a conta autenticada.
 {
   "id": 1,
   "tipo": "CPF",
-  "valor": "123.456.789-00",
-  "contaId": 10
+  "chave": "123.456.789-00",
+  "contaId": 10,
+  "dataCriacao": "2026-06-14T10:00:00"
 }
 ```
 
@@ -63,21 +64,22 @@ Confirma o código recebido e efetiva o cadastro de chaves `EMAIL` ou `TELEFONE`
 ```json
 {
   "verificationId": 42,
-  "codigo": "123456"
+  "code": "123456"
 }
 ```
 
 ### Regras
 * O `verificationId` deve ter sido gerado por um cadastro pendente do próprio usuário.
-* O código deve ser válido.
+* O `code` deve ser válido.
 
 ### Response
 ```json
 {
   "id": 1,
   "tipo": "EMAIL",
-  "valor": "usuario@email.com",
-  "contaId": 10
+  "chave": "usuario@email.com",
+  "contaId": 10,
+  "dataCriacao": "2026-06-14T10:00:00"
 }
 ```
 
@@ -98,7 +100,7 @@ PUT /api/pix/chaves/1
 ```json
 {
   "tipo": "TELEFONE",
-  "valor": "+5521999999999"
+  "chave": "+5521999999999"
 }
 ```
 
@@ -107,8 +109,9 @@ PUT /api/pix/chaves/1
 {
   "id": 1,
   "tipo": "TELEFONE",
-  "valor": "+5521999999999",
-  "contaId": 10
+  "chave": "+5521999999999",
+  "contaId": 10,
+  "dataCriacao": "2026-06-14T10:00:00"
 }
 ```
 
@@ -126,8 +129,9 @@ Retorna todas as chaves Pix da conta autenticada.
   {
     "id": 1,
     "tipo": "CPF",
-    "valor": "123.456.789-00",
-    "contaId": 10
+    "chave": "123.456.789-00",
+    "contaId": 10,
+    "dataCriacao": "2026-06-14T10:00:00"
   }
 ]
 ```
@@ -153,18 +157,21 @@ DELETE /api/pix/chaves/1
 ---
 
 # Estrutura de Chave Pix
+
 ```json
 {
   "id": 1,
   "tipo": "EMAIL",
-  "valor": "usuario@email.com",
-  "contaId": 10
+  "chave": "usuario@email.com",
+  "contaId": 10,
+  "dataCriacao": "2026-06-14T10:00:00"
 }
 ```
 
 ---
 
 # Tipos de Chave (TipoChavePix)
+
 ```text
 CPF
 TELEFONE

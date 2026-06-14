@@ -34,6 +34,10 @@ Cria um empréstimo para uma conta existente.
 
 ### Response
 
+```text
+201 Created
+```
+
 ```json
 {
   "id": 1,
@@ -89,6 +93,9 @@ GET /emprestimos/conta/1
   {
     "id": 1,
     "valorTotal": 1000.00,
+    "taxaJuros": 0.05,
+    "quantidadeParcelas": 5,
+    "dataInicio": "2026-06-04",
     "status": "ATIVO",
     "parcelas": [...]
   }
@@ -136,7 +143,6 @@ PATCH /parcelas/1/pagar
 * A parcela deve existir.
 * Uma parcela não pode ser paga duas vezes.
 * O sistema registra automaticamente:
-
     * status = PAGO
     * dataPagamento = data atual
 
@@ -178,6 +184,7 @@ StatusEmprestimo = QUITADO
 ```text
 ATIVO
 QUITADO
+ATRASADO
 ```
 
 ## Parcela
