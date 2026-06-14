@@ -6,10 +6,11 @@ import br.uff.ic.mmbank.dto.ContaDto.ContaResponseDto;
 import br.uff.ic.mmbank.mapper.ContaMapper;
 import br.uff.ic.mmbank.model.Cliente;
 import br.uff.ic.mmbank.model.Conta;
+import br.uff.ic.mmbank.model.Usuario;
 import br.uff.ic.mmbank.model.enums.StatusConta;
 import br.uff.ic.mmbank.repository.ContaRepository;
 import br.uff.ic.mmbank.repository.UsuarioRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -104,5 +105,16 @@ public class ContaService {
         } while (contaRepository.existsByNumeroConta(numeroGenerated));
 
         return numeroGenerated;
+    }
+
+    @Transactional(readOnly = true)
+    public ContaResponseDto buscarPorEmailCliente(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        Conta conta = contaRepository.findByClienteId(usuario.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada para este usuário."));
+
+        return contaMapper.toResponseDto(conta);
     }
 }

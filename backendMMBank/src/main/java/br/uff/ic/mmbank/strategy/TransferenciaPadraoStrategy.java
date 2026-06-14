@@ -21,11 +21,17 @@ public class TransferenciaPadraoStrategy implements TransferenciaStrategy {
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor da transferência deve ser maior que zero.");
         }
-        if (origem.getId().equals(destino.getId())) {
-            throw new IllegalArgumentException("Não é possível transferir para a mesma conta.");
+        if (destino != null) {
+            if (origem.getId().equals(destino.getId())) {
+                throw new IllegalArgumentException("Não é possível transferir para a mesma conta.");
+            }
+            if (destino.getStatusConta() != StatusConta.ATIVA) {
+                throw new IllegalArgumentException("A conta de destino precisa estar ATIVA para a transação.");
+            }
         }
-        if (origem.getStatusConta() != StatusConta.ATIVA || destino.getStatusConta() != StatusConta.ATIVA) {
-            throw new IllegalArgumentException("Ambas as contas precisam estar ATIVAS para a transação.");
+
+        if (origem.getStatusConta() != StatusConta.ATIVA) {
+            throw new IllegalArgumentException("A conta de origem precisa estar ATIVA para a transação.");
         }
 
         // Horário comercial do TED

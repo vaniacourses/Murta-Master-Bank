@@ -47,6 +47,9 @@ public class PixService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Conta destino não encontrada no MMBank: " + consulta.numeroConta()));
 
+        contaDestino.setSaldo(contaDestino.getSaldo().add(dto.valor()));
+        contaRepository.save(contaDestino);
+
         transacaoService.registrarCredito(
                 contaDestino,
                 dto.valor(),

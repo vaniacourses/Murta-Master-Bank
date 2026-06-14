@@ -23,7 +23,7 @@ public class Transferencia {
     private Conta contaOrigem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conta_destino_id", nullable = false)
+    @JoinColumn(name = "conta_destino_id")
     private Conta contaDestino;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

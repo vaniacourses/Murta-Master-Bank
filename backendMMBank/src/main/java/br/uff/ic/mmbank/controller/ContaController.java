@@ -48,4 +48,12 @@ public class ContaController {
         contaService.deletarConta(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/minha")
+    public ResponseEntity<ContaResponseDto> buscarMinhaConta(org.springframework.security.core.Authentication authentication) {
+        String emailAutenticado = (String) authentication.getPrincipal();
+
+        ContaResponseDto response = contaService.buscarPorEmailCliente(emailAutenticado);
+        return ResponseEntity.ok(response);
+    }
 }
