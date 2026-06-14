@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { IEmprestimo } from './Emprestimos';
+import { useAuth } from '../../hooks/auth/useAuth';
+import { emprestimoService } from '../../service/emprestimoService';
 
 interface SolicitarEmprestimoProps {
   onVoltar: () => void;
@@ -7,8 +9,10 @@ interface SolicitarEmprestimoProps {
 }
 
 export const SolicitarEmprestimo: React.FC<SolicitarEmprestimoProps> = ({ onVoltar, onSolicitar }) => {
+  const { utilizador } = useAuth();
   const [valorSimulado, setValorSimulado] = useState<string>('');
   const [qtdParcelasSimuladas, setQtdParcelasSimuladas] = useState<number>(12);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const taxaJurosMensal = 2.5; // Taxa fixa simulada do banco
 
   const calcularSimulacao = () => {
@@ -22,7 +26,7 @@ export const SolicitarEmprestimo: React.FC<SolicitarEmprestimoProps> = ({ onVolt
     return pmt;
   };
 
-  const handleSolicitar = (e: React.FormEvent) => {
+  const handleSolicitar = async (e: React.FormEvent) => {
     e.preventDefault();
     const valor = parseFloat(valorSimulado);
     if (isNaN(valor) || valor <= 0) {
@@ -30,18 +34,27 @@ export const SolicitarEmprestimo: React.FC<SolicitarEmprestimoProps> = ({ onVolt
       return;
     }
 
-    const novoEmprestimo: IEmprestimo = {
-      id: Math.floor(Math.random() * 1000),
-      valorTotal: valor,
-      taxaJuros: taxaJurosMensal,
-      qtdParcelas: qtdParcelasSimuladas,
-      valorParcelas: calcularSimulacao(),
-      dataInicio: new Date().toISOString().split('T')[0],
-      status: 'EM_ANALISE',
-      parcelas: [] // Serão geradas pelo back-end após aprovação
-    };
+    if (!utilizador?.id) {
+      alert('Sessão expirada. Faça login novamente.');
+      return;
+    }
 
-    onSolicitar(novoEmprestimo);
+    setIsSubmitting(true);
+
+    try {
+      const novoEmprestimo = await emprestimoService.criar({
+        valorTotal: valor,
+        quantidadeParcelas: qtdParcelasSimuladas,
+        contaId: utilizador.id
+      });
+
+      onSolicitar(novoEmprestimo);
+    } catch (err) {
+      console.error('Erro ao solicitar empréstimo:', err);
+      alert('Não foi possível enviar a solicitação. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,8 +95,8 @@ export const SolicitarEmprestimo: React.FC<SolicitarEmprestimoProps> = ({ onVolt
               </select>
             </div>
 
-            <button type="submit" className="btn-primary full-width mt-4">
-              Enviar para Análise
+            <button type="submit" className="btn-primary full-width mt-4" disabled={isSubmitting}>
+              {isSubmitting ? 'Contratando...' : 'Contratar Empréstimo'}
             </button>
           </form>
         </div>

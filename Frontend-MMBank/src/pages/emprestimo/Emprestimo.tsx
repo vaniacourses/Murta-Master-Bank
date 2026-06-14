@@ -4,10 +4,12 @@ import type { IEmprestimo } from './Emprestimos';
 interface EmprestimoProps {
   emprestimo: IEmprestimo;
   onVoltar: () => void;
-  onPagarParcela: (parcelaId: number) => void;
+  onPagarParcela: (parcelaId: number) => Promise<void>;
 }
 
 export const Emprestimo: React.FC<EmprestimoProps> = ({ emprestimo, onVoltar, onPagarParcela }) => {
+  const possuiParcelas = emprestimo.parcelas.length > 0;
+
   return (
     <>
       <header className="emprestimos-header">
@@ -30,8 +32,10 @@ export const Emprestimo: React.FC<EmprestimoProps> = ({ emprestimo, onVoltar, on
 
         <div className="card-box parcelas-panel">
           <h3>Cronograma de Parcelas</h3>
-          {emprestimo.status !== 'APROVADO' ? (
+          {emprestimo.status !== 'ATIVO' ? (
             <p className="empty-state">As parcelas serão geradas após a aprovação do empréstimo.</p>
+          ) : !possuiParcelas ? (
+            <p className="empty-state">Este contrato ainda não possui parcelas disponíveis.</p>
           ) : (
             <div className="parcelas-list">
               {emprestimo.parcelas.map(parcela => (
