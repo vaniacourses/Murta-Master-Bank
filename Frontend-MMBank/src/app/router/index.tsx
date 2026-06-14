@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { PrivateRoute } from './privateRouter';
 import { AuthLayout } from '../layouts/AuthLayout';
-import { DashboardLayout } from '../layouts/DashBoradLayout';
+import { DashboardLayout } from '../layouts/DashBoardLayout';
 
 // Páginas Importadas
 import { Login } from '../../pages/auth/login';
