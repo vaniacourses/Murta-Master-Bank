@@ -11,5 +11,11 @@ public record TransferenciaResponseDto(
         LocalDateTime data,
         BigDecimal valor,
         String numeroContaOrigem,
-        String numeroContaDestino
+        String numeroContaDestino,
+        String chavePixUtilizada,
+        String cpfCnpjFavorecido,
+        String bancoFavorecido,
+        String agenciaFavorecida,
+        String contaFavorecida,
+        String nomeFavorecido
 ) {}

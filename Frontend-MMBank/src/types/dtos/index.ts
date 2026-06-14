@@ -40,4 +40,5 @@ export interface TransferenciaResponseDTO {
   contaFavorecida?: string | null;
   tipoEnvio?: string | null;
   descricao?: string | null;
+  nomeFavorecido?: string | null;
 }

@@ -65,12 +65,15 @@ public class TransferenciaService {
         Conta contaDestino = null;
         boolean isTransferenciaInterna = "MMBank".equalsIgnoreCase(dto.banco());
 
-        if (isTransferenciaInterna) {
-            if (tipo == TipoTransacao.PIX_ENVIADO) {
-                ChavePix chaveEntidade = chavePixRepository.findByChave(dto.chavePix())
-                        .orElseThrow(() -> new IllegalArgumentException("Chave Pix não encontrada no MMBank."));
-                contaDestino = chaveEntidade.getConta();
-            } else {
+        if (tipo == TipoTransacao.PIX_ENVIADO) {
+            var chavePixOp = chavePixRepository.findByChave(dto.chavePix());
+            if (chavePixOp.isPresent()) {
+                contaDestino = chavePixOp.get().getConta();
+                isTransferenciaInterna = true;
+            }
+        } else {
+            isTransferenciaInterna = "MMBank".equalsIgnoreCase(dto.banco());
+            if (isTransferenciaInterna) {
                 contaDestino = contaRepository.findByNumeroContaForUpdate(dto.conta())
                         .orElseThrow(() -> new IllegalArgumentException("A conta destino número " + dto.conta() + " não existe no MMBank."));
             }

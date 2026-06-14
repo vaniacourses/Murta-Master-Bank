@@ -21,7 +21,7 @@
 /* Layout Grid */
 .transfer-content-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr; /* Coluna do formulário é ligeiramente mais larga */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
   gap: 2rem;
   align-items: start;
 }
@@ -291,6 +291,7 @@
   background-color: #f8fafc;
   outline: none;
   transition: border-color 0.2s, background-color 0.2s;
+  width: 100%;
 }
 
 .input-block input:focus,

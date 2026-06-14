@@ -57,7 +57,14 @@ export const Transferencias: React.FC = () => {
         setContaOrigemId(idConta);
 
         const resTransf = await api.get(`/transferencias/conta/${idConta}`);
-        const historico = resTransf.data;
+
+        console.log("DADOS BRUTOS DO JAVA:", resTransf.data);
+
+        const dadosReais = resTransf.data.content ? resTransf.data.content : resTransf.data;
+
+        const historico = Array.isArray(dadosReais) ? dadosReais : [];
+
+        console.log("HISTÓRICO QUE O REACT LEU:", historico);
 
         const contatosUnicos: Contato[] = [];
         const chavesVistas = new Set();
@@ -71,7 +78,7 @@ export const Transferencias: React.FC = () => {
             if (t.chavePixUtilizada) {
               contatosUnicos.push({
                 id: t.id,
-                nome: 'Contato Pix',
+                nome: t.nomeFavorecido || 'Contato Pix',
                 tipo: 'pix',
                 chave: t.chavePixUtilizada,
                 iniciais: 'PX',
@@ -80,7 +87,7 @@ export const Transferencias: React.FC = () => {
             } else if (t.bancoFavorecido || t.numeroContaDestino) {
               contatosUnicos.push({
                 id: t.id,
-                nome: t.bancoFavorecido || 'Conta Interna',
+                nome: t.nomeFavorecido || t.bancoFavorecido|| 'Conta Interna',
                 tipo: 'ted',
                 cpfCnpj: t.cpfCnpjFavorecido || '',
                 banco: t.bancoFavorecido || 'MMBank',
@@ -97,6 +104,7 @@ export const Transferencias: React.FC = () => {
 
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
+        setContatosRecentes([]); 
       }
     };
 
@@ -214,30 +222,37 @@ export const Transferencias: React.FC = () => {
               <h3>Contatos Recentes</h3>
               <button className="btn-text">Ver todos</button>
             </div>
-            <div className="contacts-list">
-              {contatosRecentes.map(contato => (
-                <div 
-                  key={contato.id} 
-                  className={`contact-item ${contatoSelecionado === contato.id ? 'selected' : ''}`}
-                  onClick={() => handleContatoClick(contato.id)}
-                >
-                  <div className="contact-avatar" style={{ backgroundColor: contato.cor }}>
-                    {contato.iniciais}
+            
+            {contatosRecentes.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#94a3b8', margin: '2rem 0', fontSize: '0.9rem' }}>
+                Nenhum envio recente. <br/>Suas próximas transferências aparecerão aqui!
+              </p>
+            ) : (
+              <div className="contacts-list">
+                {contatosRecentes.map(contato => (
+                  <div 
+                    key={contato.id} 
+                    className={`contact-item ${contatoSelecionado === contato.id ? 'selected' : ''}`}
+                    onClick={() => handleContatoClick(contato.id)}
+                  >
+                    <div className="contact-avatar" style={{ backgroundColor: contato.cor }}>
+                      {contato.iniciais}
+                    </div>
+                    <div className="contact-info">
+                      <h4>{contato.nome}</h4>
+                      <span>
+                        {contato.tipo === 'pix'
+                          ? contato.chave
+                          : contato.cpfCnpj}
+                      </span>
+                    </div>
+                    <div className="contact-check">
+                      {contatoSelecionado === contato.id && '✓'}
+                    </div>
                   </div>
-                  <div className="contact-info">
-                    <h4>{contato.nome}</h4>
-                    <span>
-                      {contato.tipo === 'pix'
-                        ? contato.chave
-                        : contato.cpfCnpj}
-                    </span>
-                  </div>
-                  <div className="contact-check">
-                    {contatoSelecionado === contato.id && '✓'}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -252,7 +267,16 @@ export const Transferencias: React.FC = () => {
                 <p><strong>Data:</strong> {new Date(comprovante.data).toLocaleString()}</p>
                 <p><strong>Valor:</strong> R$ {comprovante.valor.toFixed(2)}</p>
                 <p><strong>Sua Conta:</strong> {comprovante.numeroContaOrigem}</p>
-                <p><strong>Conta Destino:</strong> {comprovante.numeroContaDestino}</p>
+                <p>
+                  <strong>Destino: </strong> 
+                  {comprovante.numeroContaDestino 
+                    ? `Conta MMBank (${comprovante.numeroContaDestino})` 
+                    : (comprovante.chavePixUtilizada 
+                        ? `Chave PIX (${comprovante.chavePixUtilizada})` 
+                        : `Banco ${comprovante.bancoFavorecido} - CC: ${comprovante.contaFavorecida}`
+                      )
+                  }
+                </p>
               </div>
               <br/>
               <button 
