@@ -220,7 +220,6 @@ export const Transferencias: React.FC = () => {
           <div className="recent-contacts-card">
             <div className="card-header-simple">
               <h3>Contatos Recentes</h3>
-              <button className="btn-text">Ver todos</button>
             </div>
             
             {contatosRecentes.length === 0 ? (
