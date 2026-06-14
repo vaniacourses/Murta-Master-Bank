@@ -34,6 +34,7 @@ public class EmprestimoService {
     private final EmprestimoMapper emprestimoMapper;
     private final ParcelaRepository parcelaRepository ;
 
+    @Transactional
     public EmprestimoResponseDto criarEmprestimo(EmprestimoRequestDto dto) {
 
         Conta conta = contaRepository.findById(dto.contaId())
@@ -91,6 +92,9 @@ public class EmprestimoService {
 
         Emprestimo salvo =
                 emprestimoRepository.save(emprestimo);
+
+        conta.setSaldo(conta.getSaldo().add(dto.valorTotal()));
+        contaRepository.save(conta);
 
         return emprestimoMapper.toResponseDto(salvo);
     }
@@ -164,6 +168,8 @@ public class EmprestimoService {
             throw new RuntimeException("Sem Saldo para pagar parcela") ;
 
         }else {
+            conta.setSaldo(conta.getSaldo().subtract(parcela.getValor()));
+            contaRepository.save(conta);
 
             parcela.setStatus(StatusParcela.PAGO);
             parcela.setDataPagamento(LocalDate.now());
