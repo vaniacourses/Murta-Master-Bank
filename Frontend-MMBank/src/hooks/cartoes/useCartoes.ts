@@ -54,15 +54,22 @@ export const useCartoes = () => {
     setIsLoading(true);
     setError('');
     try {
-      // 🌟 BUSCA DIRETO DA FONTE NO MOMENTO DO CLIQUE/RENDER
+      
       const tokenSalvo = localStorage.getItem('@MMBank:token');
+      const headers = { Authorization: `Bearer ${tokenSalvo}` };
 
-      const response = await api.get(`/cartoes/conta/${utilizador.id}`, {
-        headers: {
-          // Injeta manualmente para garantir que não vai vazio
-          Authorization: `Bearer ${tokenSalvo}`
-        }
-      });
+      const contasResponse = await api.get(`/contas/cliente/${utilizador.id}`, { headers });
+      const contas = contasResponse.data;
+
+      if (!contas || contas.length === 0) {
+        setCartoes([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const contaId = contas[0].id; 
+
+      const response = await api.get(`/cartoes/conta/${contaId}`, { headers });
       
       const mapped = response.data.map(mapBackendToICartao);
       setCartoes(mapped);

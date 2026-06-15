@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { useDashboard } from "../../hooks/useDashboard.ts";
 import {
   SeletorConta,
@@ -31,19 +32,15 @@ const historicalData = [
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444"];
 
 export const Dashboard: React.FC = () => {
-  const [periodo, setPeriodo] = useState<"dia" | "mes" | "ano" | "custom">(
-    "ano",
-  );
-
-  // Estado que guardará a conta selecionada ativa pelo usuário
+  const [periodo, setPeriodo] = useState<"dia" | "mes" | "ano" | "custom">("ano");
   const [contaAtiva, setContaAtiva] = useState<ContaResponseDto | null>(null);
 
-  // Hardcoded temporário para o cliente logado (Henrique = id 1)
-  const CLIENTE_LOGADO_ID = 1;
+  const { utilizador } = useAuth();
 
-  // Se o usuário selecionou uma conta, usamos o ID dela, se não tiver nada carregado ainda, usamos padrão 1
-  const idContaAtual = contaAtiva ? contaAtiva.id : 1;
+  const CLIENTE_LOGADO_ID = utilizador?.id || 0;
 
+  const idContaAtual = contaAtiva ? contaAtiva.id : 0;
+<q></q>
   const {
     conta,
     transacoes,

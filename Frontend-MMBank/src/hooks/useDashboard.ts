@@ -45,21 +45,24 @@ export const useDashboard = (contaId: number = 1, itensPorPagina: number = 10) =
   const [totalSaidas, setTotalSaidas] = useState<number>(0);
 
   const carregarDadosDashboard = useCallback(async () => {
+    if (!contaId || contaId === 0) {
+      setLoading(false);
+      setError("Nenhuma conta bancária associada. Por favor, abra uma conta para visualizar o seu painel.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      // 1. Busca os dados consolidados da conta e seus totais macro
       const contaResponse = await api.get<ContaDados>(`/contas/${contaId}`);
       setConta(contaResponse.data);
       setTotalEntradas(contaResponse.data.totalEntradas || 0);
       setTotalSaidas(contaResponse.data.totalSaidas || 0);
 
-      // 2. Busca TODAS as transações sem limitação de página para o Gráfico de Pizza
       const todasResponse = await api.get<TransacaoDados[]>(`/transacoes/contas/${contaId}`);
       setTransacoesTotais(todasResponse.data || []);
 
-      // 3. Busca o lote restrito à página atual apenas para preencher a tabela do extrato
       const transacoesResponse = await api.get(`/transacoes/contas/paginada/${contaId}`, {
         params: { page: paginaAtual, size: itensPorPagina }
       });
@@ -69,7 +72,7 @@ export const useDashboard = (contaId: number = 1, itensPorPagina: number = 10) =
 
     } catch (err) {
       console.error(err);
-      setError("Erro ao sincronizar dados.");
+      setError("Erro ao sincronizar dados. A conta pode não existir.");
     } finally {
       setLoading(false);
     }
