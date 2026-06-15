@@ -11,45 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-/**
- * <h1>Padrão de Projeto GoF: Adapter</h1>
- * <p>
- * A classe {@code BacenAdapter} atua como um Adaptador (Adapter) entre o núcleo
- * do sistema MMBank
- * (que utiliza a interface {@link BacenGateway} e os DTOs de domínio como
- * {@link PixTransferenciaRequestDto})
- * e a API externa do Banco Central simulada por {@link BacenSimulator} (o
- * Adaptee).
- * </p>
- *
- * <h2>Como o Adapter protege o núcleo do MMBank:</h2>
- * <ul>
- * <li><b>Isolamento de Contratos Externos:</b> O núcleo do MMBank (camada de
- * serviços, controladores e entidades)
- * não conhece a estrutura de dados proprietária do BACEN (ex:
- * {@link BacenOrdemPagamentoRequest}, {@link BacenOrdemPagamentoResponse}).
- * Ele interage exclusivamente por meio de abstrações locais e tipos nativos de
- * domínio.</li>
- * <li><b>Resiliência a Mudanças na API:</b> Se o BACEN alterar o formato de sua
- * API, alterar nomes de campos (ex: mudar
- * {@code chaveDestino} para {@code pixKeyDest}), alterar o protocolo de
- * comunicação (ex: de REST/JSON para XML/gRPC)
- * ou adicionar novos parâmetros obrigatórios na requisição, <b>apenas</b> este
- * adaptador precisará ser modificado.
- * Nenhuma linha de código das regras de negócios de transferências ou da lógica
- * de Pix do MMBank precisará ser alterada.</li>
- * <li><b>Facilidade de Testabilidade:</b> Permite substituir a integração real
- * por mocks da interface {@link BacenGateway}
- * com facilidade nos testes unitários da camada de serviço de negócio.</li>
- * </ul>
- *
- * <p>
- * Este adaptador também reflete a lógica do <b>Caso de Uso UC05 (Liquidação de
- * Pix no BACEN)</b>, onde o sistema do banco
- * prepara a ordem de pagamento com base nos dados locais do cliente e envia ao
- * BACEN para processamento síncrono.
- * </p>
- */
+
 @Service
 public class BacenAdapter implements BacenGateway {
 
@@ -95,7 +57,6 @@ public class BacenAdapter implements BacenGateway {
                 .valor(request.valor())
                 .build();
 
-        // Obtém a instância do Singleton
         BacenSimulator simulator = BacenSimulator.getInstance();
 
         // Executa a chamada síncrona ao BacenSimulator (Adaptee)
