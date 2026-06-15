@@ -9,11 +9,14 @@ import br.uff.ic.mmbank.model.Conta;
 import br.uff.ic.mmbank.model.Usuario;
 import br.uff.ic.mmbank.model.enums.StatusConta;
 import br.uff.ic.mmbank.repository.ContaRepository;
+import br.uff.ic.mmbank.repository.TransacaoRepository;
 import br.uff.ic.mmbank.repository.UsuarioRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -23,9 +26,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContaService {
 
-    private final ContaRepository contaRepository;
-    private final ContaMapper contaMapper;
-    private final UsuarioRepository usuarioRepository;
+    @Autowired
+    private ContaRepository contaRepository;
+    @Autowired
+    private TransacaoRepository transacaoRepository;
+    @Autowired
+    private ContaMapper contaMapper;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Transactional
     public ContaResponseDto criarConta(ContaRequestDto dto) {
@@ -44,16 +52,23 @@ public class ContaService {
         return contaMapper.toResponseDto(contaSalva);
     }
 
-    public List<ContaResponseDto> listarTodasContas() {
-        return contaRepository.findAll().stream()
-                .map(contaMapper::toResponseDto)
+    public List<ContaResponseDto> listarContasPorCliente(Long clienteId) {
+        // 1. Busca a lista de contas que não estão encerradas
+        List<Conta> contas = contaRepository.findAllByClienteId(clienteId);
+
+        return contas.stream()
+                .map(contaMapper::toResponseDto) // Aqui ele usa automaticamente a sobrecarga que injeta BigDecimal.ZERO nos totais
                 .collect(Collectors.toList());
     }
 
     public ContaResponseDto buscarPorId(Long id) {
         Conta conta = contaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta não encontrada."));
-        return contaMapper.toResponseDto(conta);
+                .orElseThrow(() -> new RuntimeException("Conta não encontrada com ID: " + id));
+
+        BigDecimal totalEntradas = transacaoRepository.calcularTotalEntradas(id);
+        BigDecimal totalSaidas = transacaoRepository.calcularTotalSaidas(id);
+
+        return contaMapper.toResponseDto(conta, totalEntradas, totalSaidas);
     }
 
     @Transactional

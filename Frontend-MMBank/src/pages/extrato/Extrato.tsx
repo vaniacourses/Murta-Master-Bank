@@ -1,50 +1,61 @@
 import React, { useState, useMemo } from 'react';
+import { useAuth } from '../../hooks/auth/useAuth'; // Caminho do seu hook de autenticação
+import { useExtrato } from '../../hooks/useExtrato'; // Caminho do hook que criamos acima
 import './Extrato.css';
 
-// Tipagens baseadas no Diagrama de Entidade
-type TipoTransacao = 'PIX_ENVIADO' | 'PIX_RECEBIDO' | 'DEPOSITO' | 'SAQUE' | 'TRANSFERENCIA' | 'PAGAMENTO_EMPRESTIMO';
-type StatusTransacao = 'PENDENTE' | 'CONCLUIDA' | 'FALHA';
-
-interface Transacao {
-  id: number;
-  tipo: TipoTransacao;
-  valor: number;
-  data: string;
-  status: StatusTransacao;
-  categoria: string;
-}
-
-// Mock de dados simulando o retorno do back-end
-const transacoesMock: Transacao[] = [
-  { id: 1, tipo: 'PIX_ENVIADO', valor: -150.00, data: '2026-05-25', status: 'CONCLUIDA', categoria: 'Mercado' },
-  { id: 2, tipo: 'PIX_RECEBIDO', valor: 4500.00, data: '2026-05-24', status: 'CONCLUIDA', categoria: 'Salário' },
-  { id: 3, tipo: 'TRANSFERENCIA', valor: -800.00, data: '2026-05-23', status: 'PENDENTE', categoria: 'Pagamento Fatura' },
-  { id: 4, tipo: 'SAQUE', valor: -200.00, data: '2026-05-20', status: 'CONCLUIDA', categoria: 'Caixa Eletrônico 24h' },
-  { id: 5, tipo: 'PAGAMENTO_EMPRESTIMO', valor: -350.50, data: '2026-05-15', status: 'FALHA', categoria: 'Parcela 02/12' },
-  { id: 6, tipo: 'DEPOSITO', valor: 1200.00, data: '2026-05-10', status: 'CONCLUIDA', categoria: 'Depósito em Dinheiro' },
-];
-
 export const Extrato: React.FC = () => {
+  const { utilizador } = useAuth();
+  
+  // Consome o hook passando o ID da conta do usuário logado
+  // Nota: Se o seu backend buscar por ID da Conta em vez de ID do Cliente, 
+  // certifique-se de passar o ID da conta correto aqui (ex: utilizador?.contaId)
+  const { transacoesTotais, loading, error } = useExtrato(utilizador?.id);
+
   const [busca, setBusca] = useState('');
   const [filtroTipo, setFiltroTipo] = useState<string>('TODOS');
   const [filtroStatus, setFiltroStatus] = useState<string>('TODOS');
 
-  // Lógica de filtragem usando useMemo para performance
+  // Lógica de filtragem reativa baseada nos dados vindos do backend
   const transacoesFiltradas = useMemo(() => {
-    return transacoesMock.filter(tx => {
-      const matchBusca = tx.categoria.toLowerCase().includes(busca.toLowerCase()) || 
-                         tx.tipo.replace('_', ' ').toLowerCase().includes(busca.toLowerCase());
+    if (!Array.isArray(transacoesTotais)) return [];
+
+    return transacoesTotais.filter(tx => {
+      if (!tx) return false;
+
+      const categoriaNome = tx.categoria || 'Outros';
+      const tipoNome = tx.tipo || '';
+
+      const matchBusca = 
+        categoriaNome.toLowerCase().includes(busca.toLowerCase()) || 
+        tipoNome.replace('_', ' ').toLowerCase().includes(busca.toLowerCase());
+        
       const matchTipo = filtroTipo === 'TODOS' || tx.tipo === filtroTipo;
       const matchStatus = filtroStatus === 'TODOS' || tx.status === filtroStatus;
 
       return matchBusca && matchTipo && matchStatus;
     });
-  }, [busca, filtroTipo, filtroStatus]);
+  }, [transacoesTotais, busca, filtroTipo, filtroStatus]);
 
-  // Função para formatar o nome do tipo de transação
   const formatarTipo = (tipo: string) => {
+    if (!tipo) return '';
     return tipo.replace('_', ' ').replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
   };
+
+  if (loading) {
+    return (
+      <div className="extrato-container" style={{ textAlign: 'center', padding: '3rem' }}>
+        <p style={{ color: '#888', fontSize: '1.2rem' }}>A carregar o extrato das transações...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="extrato-container" style={{ textAlign: 'center', padding: '3rem' }}>
+        <p style={{ color: '#dc3545', fontSize: '1.2rem' }}>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="extrato-container">
@@ -102,25 +113,34 @@ export const Extrato: React.FC = () => {
             </thead>
             <tbody>
               {transacoesFiltradas.length > 0 ? (
-                transacoesFiltradas.map((tx) => (
-                  <tr key={tx.id}>
-                    <td className="tx-date">
-                      {new Date(tx.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                    </td>
-                    <td className="tx-info">
-                      <strong>{tx.categoria}</strong>
-                      <span>{formatarTipo(tx.tipo)}</span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${tx.status.toLowerCase()}`}>
-                        {tx.status}
-                      </span>
-                    </td>
-                    <td className={`tx-value align-right ${tx.valor > 0 ? 'positive' : 'negative'}`}>
-                      {tx.valor > 0 ? '+' : ''} R$ {Math.abs(tx.valor).toFixed(2)}
-                    </td>
-                  </tr>
-                ))
+                transacoesFiltradas.map((tx) => {
+                  const ehSaida =
+                    tx.tipo !== "PIX_RECEBIDO" &&
+                    tx.tipo !== "DEPOSITO" &&
+                    !(tx.tipo === "TRANSFERENCIA" && tx.valor > 0);
+
+                  return (
+                    <tr key={tx.id}>
+                      <td className="tx-date">
+                        {tx.data 
+                          ? new Date(tx.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) 
+                          : '---'}
+                      </td>
+                      <td className="tx-info">
+                        <strong>{tx.categoria || 'Outros'}</strong>
+                        <span>{formatarTipo(tx.tipo)}</span>
+                      </td>
+                      <td>
+                        <span className={`status-badge ${(tx.status || 'PENDENTE').toLowerCase()}`}>
+                          {tx.status || 'PENDENTE'}
+                        </span>
+                      </td>
+                      <td className={`tx-value align-right ${!ehSaida ? 'positive' : 'negative'}`}>
+                        {!ehSaida ? '+' : '-'} R$ {Math.abs(tx.valor).toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={4} className="empty-state">

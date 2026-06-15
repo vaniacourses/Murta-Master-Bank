@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -17,7 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContaController {
 
-    private final ContaService contaService;
+    @Autowired
+    private ContaService contaService;
 
     @PostMapping
     public ResponseEntity<ContaResponseDto> criarConta(@RequestBody @Valid ContaRequestDto contaRequestDto) {
@@ -25,9 +27,14 @@ public class ContaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<ContaResponseDto>> listarTodasContas() {
-        return ResponseEntity.ok(contaService.listarTodasContas());
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<?> listarContasPorCliente(@PathVariable Long clienteId) {
+        if (clienteId == null) {
+            return ResponseEntity.badRequest()
+                    .body("O parâmetro 'clienteId' é obrigatório para listar as contas.");
+        }
+        List<ContaResponseDto> contas = contaService.listarContasPorCliente(clienteId);
+        return ResponseEntity.ok(contas);
     }
 
     @GetMapping("/{id}")

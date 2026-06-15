@@ -1,5 +1,6 @@
 package br.uff.ic.mmbank.service;
 
+import br.uff.ic.mmbank.dto.TransacaoDto;
 import br.uff.ic.mmbank.exception.ResourceNotFoundException;
 import br.uff.ic.mmbank.model.Conta;
 import br.uff.ic.mmbank.model.Transacao;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,5 +65,15 @@ public class TransacaoService {
 
         // Cria a regra de paginação (Spring começa a contar as páginas do 0)
         return transacaoRepository.findByContaIdOrderByDataDesc(contaId, PageRequest.of(page, size));
+    }
+
+    public List<TransacaoDto> listarTodasTransacoesPorConta(Long contaId) {
+        // 1. Busca todas as entidades do banco
+        List<Transacao> transacoes = transacaoRepository.findByContaIdOrderByDataDesc(contaId);
+
+        // 2. Mapeia Transacao para Dto
+        return transacoes.stream()
+                .map(TransacaoDto::new)
+                .collect(Collectors.toList());
     }
 }

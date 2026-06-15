@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../service/api';
 
-
 interface ContaDados {
   id: number;
   numeroConta: string;
   saldo: number;
   tipoConta: string;
   statusConta: string;
+  totalEntradas?: number; 
+  totalSaidas?: number;
 }
-
 
 export type TipoTransacao = 
   | 'PIX_ENVIADO' 
@@ -32,30 +32,39 @@ interface TransacaoDados {
   ispbDestino: string | null;
 }
 
-
 export const useDashboard = (contaId: number = 1, itensPorPagina: number = 10) => {
   const [conta, setConta] = useState<ContaDados | null>(null);
-  const [transacoes, setTransacoes] = useState<TransacaoDados[]>([]);
+  const [transacoesPaginadas, setTransacoesPaginadas] = useState<TransacaoDados[]>([]);
+  const [transacoesTotais, setTransacoesTotais] = useState<TransacaoDados[]>([]); // <-- Lista cheia global
   const [paginaAtual, setPaginaAtual] = useState<number>(0);
   const [totalPaginas, setTotalPaginas] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [totalEntradas, setTotalEntradas] = useState<number>(0);
+  const [totalSaidas, setTotalSaidas] = useState<number>(0);
 
   const carregarDadosDashboard = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const contaResponse = await api.get(`/contas/${contaId}`);
+      // 1. Busca os dados consolidados da conta e seus totais macro
+      const contaResponse = await api.get<ContaDados>(`/contas/${contaId}`);
       setConta(contaResponse.data);
+      setTotalEntradas(contaResponse.data.totalEntradas || 0);
+      setTotalSaidas(contaResponse.data.totalSaidas || 0);
 
-      
-      const transacoesResponse = await api.get(`/transacoes/contas/${contaId}`, {
+      // 2. Busca TODAS as transações sem limitação de página para o Gráfico de Pizza
+      const todasResponse = await api.get<TransacaoDados[]>(`/transacoes/contas/${contaId}`);
+      setTransacoesTotais(todasResponse.data || []);
+
+      // 3. Busca o lote restrito à página atual apenas para preencher a tabela do extrato
+      const transacoesResponse = await api.get(`/transacoes/contas/paginada/${contaId}`, {
         params: { page: paginaAtual, size: itensPorPagina }
       });
       
-      
-      setTransacoes(transacoesResponse.data.content || []);
+      setTransacoesPaginadas(transacoesResponse.data.content || []);
       setTotalPaginas(transacoesResponse.data.totalPages || 0);
 
     } catch (err) {
@@ -70,37 +79,17 @@ export const useDashboard = (contaId: number = 1, itensPorPagina: number = 10) =
     carregarDadosDashboard();
   }, [carregarDadosDashboard]);
 
-  const totalEntradas = transacoes
-    .filter(t => {
-      const ehEntradaNativa = t.tipo === 'PIX_RECEBIDO' || t.tipo === 'DEPOSITO';
-      
-      
-      const ehTransferenciaRecebida = t.tipo === 'TRANSFERENCIA' && t.valor > 0; 
-      
-      return ehEntradaNativa || ehTransferenciaRecebida;
-    })
-    .reduce((sum, t) => sum + Math.abs(t.valor), 0);
+  // Reseta a paginação ao trocar de conta no seletor
+  useEffect(() => {
+    setPaginaAtual(0);
+  }, [contaId]);
 
-  const totalSaidas = transacoes
-    .filter(t => {
-      const ehSaidaNativa = 
-        t.tipo === 'PIX_ENVIADO' || 
-        t.tipo === 'SAQUE' || 
-        t.tipo === 'PAGAMENTO_EMPRESTIMO' || 
-        t.tipo === 'COMPRA_DEBITO' || 
-        t.tipo === 'COMPRA_CREDITO';
-        
-      const ehTransferenciaEnviada = t.tipo === 'TRANSFERENCIA' && (!ehSaidaNativa && t.valor < 0);
-
-      return ehSaidaNativa || t.tipo === 'TRANSFERENCIA' || ehTransferenciaEnviada;
-    })
-    .reduce((sum, t) => sum + Math.abs(t.valor), 0);
-
-  return {
+ return {
     conta,
-    transacoes,
-    totalEntradas,
-    totalSaidas,
+    transacoes: transacoesPaginadas, 
+    transacoesTotais,               
+    totalEntradas, 
+    totalSaidas,   
     paginaAtual,
     totalPaginas,
     setPaginaAtual, 

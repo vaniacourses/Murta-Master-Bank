@@ -14,5 +14,7 @@ public record ContaResponseDto(
    StatusConta statusConta,
    LocalDateTime dataCriacao,
    Long clienteId,
-   String nomeCliente
+   String nomeCliente,
+   BigDecimal totalEntradas,
+   BigDecimal totalSaidas
 ) {}
