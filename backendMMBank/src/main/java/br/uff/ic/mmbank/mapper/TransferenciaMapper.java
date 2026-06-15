@@ -11,11 +11,18 @@ import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring")
 public interface TransferenciaMapper {
+
     @Mapping(source = "transferencia.id", target = "id")
     @Mapping(source = "transferencia.contaOrigem.numeroConta", target = "numeroContaOrigem")
     @Mapping(source = "transferencia.contaDestino.numeroConta", target = "numeroContaDestino")
     @Mapping(target = "valor", source = "valorTransferencia")
     @Mapping(target = "data", expression = "java(extrairData(transferencia))")
+    @Mapping(source = "transferencia.chavePixUtilizada", target = "chavePixUtilizada")
+    @Mapping(source = "transferencia.cpfCnpjFavorecido", target = "cpfCnpjFavorecido")
+    @Mapping(source = "transferencia.bancoFavorecido", target = "bancoFavorecido")
+    @Mapping(source = "transferencia.agenciaFavorecida", target = "agenciaFavorecida")
+    @Mapping(source = "transferencia.contaFavorecida", target = "contaFavorecida")
+    @Mapping(source = "transferencia.contaDestino.cliente.nome", target = "nomeFavorecido")
     TransferenciaResponseDto toResponseDto(Transferencia transferencia, BigDecimal valorTransferencia);
 
     default TransferenciaResponseDto toResponseDto(Transferencia transferencia) {

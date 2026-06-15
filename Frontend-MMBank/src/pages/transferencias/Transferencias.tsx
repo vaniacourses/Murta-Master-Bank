@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Transferencias.css';
 import { transferenciaService } from '../../service/tranferenciaService';
 import type { TransferenciaResponseDTO } from '../../types/dtos';
+import { api } from '../../service/api';
 
 type ContatoPix = {
   id: number;
@@ -24,47 +25,8 @@ type ContatoTed = {
   cor: string;
 };
 
-// --- Mocks de Dados ---
 type Contato = ContatoPix | ContatoTed;
 
-// --- Mocks de Dados ---
-const contatosRecentes: Contato[] = [
-  {
-    id: 1,
-    nome: 'Ana Costa',
-    tipo: 'pix',
-    chave: 'ana@email.com',
-    iniciais: 'AC',
-    cor: '#3b82f6'
-  },
-  {
-    id: 2,
-    nome: 'Carlos Silva',
-    tipo: 'pix',
-    chave: '11999998888',
-    iniciais: 'CS',
-    cor: '#10b981'
-  },
-  {
-    id: 3,
-    nome: 'Empresa XYZ',
-    tipo: 'ted',
-    cpfCnpj: '12.345.678/0001-99',
-    banco: '341',
-    agencia: '1234',
-    conta: '56789-0',
-    iniciais: 'EX',
-    cor: '#8b5cf6'
-  },
-  {
-    id: 4,
-    nome: 'João Souza',
-    tipo: 'pix',
-    chave: 'joao.souza@pix',
-    iniciais: 'JS',
-    cor: '#f59e0b'
-  }
-];
 
 export const Transferencias: React.FC = () => {
   const [metodo, setMetodo] = useState<'pix' | 'ted'>('pix');
@@ -81,6 +43,73 @@ export const Transferencias: React.FC = () => {
   const [conta, setConta] = useState('');
   const [comprovante, setComprovante] = useState<TransferenciaResponseDTO | null>(null);
   const [descricao, setDescricao] = useState('');
+  const [saldoAtual, setSaldoAtual] = useState<number>(0);
+  const [contaOrigemId, setContaOrigemId] = useState<number>(0);
+  const [atualizador, setAtualizador] = useState<number>(0);
+  const [contatosRecentes, setContatosRecentes] = useState<Contato[]>([]);
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const resConta = await api.get('/contas/minha');
+        const idConta = resConta.data.id;
+        setSaldoAtual(resConta.data.saldo);
+        setContaOrigemId(idConta);
+
+        const resTransf = await api.get(`/transferencias/conta/${idConta}`);
+
+        console.log("DADOS BRUTOS DO JAVA:", resTransf.data);
+
+        const dadosReais = resTransf.data.content ? resTransf.data.content : resTransf.data;
+
+        const historico = Array.isArray(dadosReais) ? dadosReais : [];
+
+        console.log("HISTÓRICO QUE O REACT LEU:", historico);
+
+        const contatosUnicos: Contato[] = [];
+        const chavesVistas = new Set();
+
+        historico.reverse().forEach((t: TransferenciaResponseDTO) => {
+          const identificador = t.chavePixUtilizada || t.contaFavorecida || t.numeroContaDestino;
+
+          if (identificador && !chavesVistas.has(identificador)) {
+            chavesVistas.add(identificador);
+            
+            if (t.chavePixUtilizada) {
+              contatosUnicos.push({
+                id: t.id,
+                nome: t.nomeFavorecido || 'Contato Pix',
+                tipo: 'pix',
+                chave: t.chavePixUtilizada,
+                iniciais: 'PX',
+                cor: '#3b82f6'
+              });
+            } else if (t.bancoFavorecido || t.numeroContaDestino) {
+              contatosUnicos.push({
+                id: t.id,
+                nome: t.nomeFavorecido || t.bancoFavorecido|| 'Conta Interna',
+                tipo: 'ted',
+                cpfCnpj: t.cpfCnpjFavorecido || '',
+                banco: t.bancoFavorecido || 'MMBank',
+                agencia: t.agenciaFavorecida || '0001',
+                conta: t.contaFavorecida || t.numeroContaDestino || '',
+                iniciais: 'TD',
+                cor: '#10b981'
+              });
+            }
+          }
+        });
+
+        setContatosRecentes(contatosUnicos.slice(0, 4));
+
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        setContatosRecentes([]); 
+      }
+    };
+
+    carregarDados();
+  }, [atualizador]);
 
   const handleContatoClick = (id: number) => {
     const contato = contatosRecentes.find(c => c.id === id);
@@ -119,11 +148,10 @@ export const Transferencias: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const destinoId = metodo === 'pix' ? Number(chavePix) : Number(conta);
 
       const dadosEnvio = {
-        contaOrigemId: 1,
-        contaDestinoId: destinoId, 
+        contaOrigemId: contaOrigemId,
+        contaDestinoId: null,
         valor: valorConvertido,
         chavePix: metodo === 'pix' ? chavePix : undefined,
         cpfCnpj: metodo === 'ted' ? chavePix : undefined,
@@ -142,6 +170,7 @@ export const Transferencias: React.FC = () => {
       }
 
       setComprovante(resposta);
+      setAtualizador(prev => prev + 1);
       
     } catch (error) {
       console.error(error);
@@ -191,32 +220,38 @@ export const Transferencias: React.FC = () => {
           <div className="recent-contacts-card">
             <div className="card-header-simple">
               <h3>Contatos Recentes</h3>
-              <button className="btn-text">Ver todos</button>
             </div>
-            <div className="contacts-list">
-              {contatosRecentes.map(contato => (
-                <div 
-                  key={contato.id} 
-                  className={`contact-item ${contatoSelecionado === contato.id ? 'selected' : ''}`}
-                  onClick={() => handleContatoClick(contato.id)}
-                >
-                  <div className="contact-avatar" style={{ backgroundColor: contato.cor }}>
-                    {contato.iniciais}
+            
+            {contatosRecentes.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#94a3b8', margin: '2rem 0', fontSize: '0.9rem' }}>
+                Nenhum envio recente. <br/>Suas próximas transferências aparecerão aqui!
+              </p>
+            ) : (
+              <div className="contacts-list">
+                {contatosRecentes.map(contato => (
+                  <div 
+                    key={contato.id} 
+                    className={`contact-item ${contatoSelecionado === contato.id ? 'selected' : ''}`}
+                    onClick={() => handleContatoClick(contato.id)}
+                  >
+                    <div className="contact-avatar" style={{ backgroundColor: contato.cor }}>
+                      {contato.iniciais}
+                    </div>
+                    <div className="contact-info">
+                      <h4>{contato.nome}</h4>
+                      <span>
+                        {contato.tipo === 'pix'
+                          ? contato.chave
+                          : contato.cpfCnpj}
+                      </span>
+                    </div>
+                    <div className="contact-check">
+                      {contatoSelecionado === contato.id && '✓'}
+                    </div>
                   </div>
-                  <div className="contact-info">
-                    <h4>{contato.nome}</h4>
-                    <span>
-                      {contato.tipo === 'pix'
-                        ? contato.chave
-                        : contato.cpfCnpj}
-                    </span>
-                  </div>
-                  <div className="contact-check">
-                    {contatoSelecionado === contato.id && '✓'}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -231,7 +266,16 @@ export const Transferencias: React.FC = () => {
                 <p><strong>Data:</strong> {new Date(comprovante.data).toLocaleString()}</p>
                 <p><strong>Valor:</strong> R$ {comprovante.valor.toFixed(2)}</p>
                 <p><strong>Sua Conta:</strong> {comprovante.numeroContaOrigem}</p>
-                <p><strong>Conta Destino:</strong> {comprovante.numeroContaDestino}</p>
+                <p>
+                  <strong>Destino: </strong> 
+                  {comprovante.numeroContaDestino 
+                    ? `Conta MMBank (${comprovante.numeroContaDestino})` 
+                    : (comprovante.chavePixUtilizada 
+                        ? `Chave PIX (${comprovante.chavePixUtilizada})` 
+                        : `Banco ${comprovante.bancoFavorecido} - CC: ${comprovante.contaFavorecida}`
+                      )
+                  }
+                </p>
               </div>
               <br/>
               <button 
@@ -258,7 +302,11 @@ export const Transferencias: React.FC = () => {
                     required
                   />
                 </div>
-                <span className="balance-hint">Saldo disponível: <strong>R$ 24.780,50</strong></span>
+                <span className="balance-hint">
+                  Saldo disponível: <strong>
+                    {saldoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </strong>
+                </span>
               </div>
 
               <div className="form-fields">
@@ -288,6 +336,7 @@ export const Transferencias: React.FC = () => {
                         <option value="104">Caixa Econômica</option>
                         <option value="237">Bradesco</option>
                         <option value="341">Itaú</option>
+                        <option value="MMBank">MMBank</option>
                       </select>
                     </div>
                     <div className="input-block">
