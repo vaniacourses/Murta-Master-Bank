@@ -76,6 +76,16 @@ public class TestDataLoader {
                 cliente2.setDataNascimento(LocalDate.of(1995, 8, 20));
                 cliente2 = usuarioRepository.save(cliente2);
 
+                Transacao transacao8 = Transacao.builder()
+                        .tipo(TipoTransacao.COMPRA_DEBITO)
+                        .valor(new BigDecimal("157.00"))
+                        .data(LocalDateTime.now().minusDays(10))
+                        .status(StatusTransacao.CONCLUIDA)
+                        .conta(conta1)
+                        .cartao(null)
+                        .categoria("Transporte")
+                        .build();
+
                 Conta conta2 = new Conta();
                 conta2.setNumeroConta("54321-0");
                 conta2.setSaldo(new BigDecimal("500.00"));

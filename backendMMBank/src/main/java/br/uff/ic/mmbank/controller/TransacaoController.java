@@ -20,7 +20,7 @@ public class TransacaoController {
     @Autowired
     private TransacaoService transacaoService;
 
-    @GetMapping("/contas/{id}")
+    @GetMapping("/contas/paginada/{id}")
     public ResponseEntity<?> listarPorConta(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
@@ -38,5 +38,11 @@ public class TransacaoController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erro ao processar extrato paginado.");
         }
+    }
+
+    @GetMapping("/contas/{id}")
+    public ResponseEntity<List<TransacaoDto>> listarTodasTransacoes(@PathVariable Long id) {
+        List<TransacaoDto> transacoes = transacaoService.listarTodasTransacoesPorConta(id);
+        return ResponseEntity.ok(transacoes);
     }
 }

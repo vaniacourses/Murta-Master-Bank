@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long> {
     List<Transacao> findByConta(Conta conta);
 
     Page<Transacao> findByContaIdOrderByDataDesc(Long contaId, Pageable pageable);
+    List<Transacao> findByContaIdOrderByDataDesc(Long contaId);
 
     List<Transacao> findByContaAndTipo(Conta conta, TipoTransacao tipo);
 
@@ -35,4 +37,23 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long> {
 
     @Query("SELECT t FROM Transacao t WHERE t.cartao.id = :cartaoId ORDER BY t.data DESC")
     Page<Transacao> findRecentByCartaoId(@Param("cartaoId") Long cartaoId, Pageable pageable);
+
+    @Query("SELECT COALESCE(SUM(ABS(t.valor)), 0) FROM Transacao t " +
+            "WHERE t.conta.id = :contaId " +
+            "AND t.status = 'CONCLUIDA' " +
+            "AND (t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.DEPOSITO " +
+            "OR t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.PIX_RECEBIDO " +
+            "OR (t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.TRANSFERENCIA AND t.valor > 0))")
+    BigDecimal calcularTotalEntradas(@Param("contaId") Long contaId);
+
+    @Query("SELECT COALESCE(SUM(ABS(t.valor)), 0) FROM Transacao t " +
+            "WHERE t.conta.id = :contaId " +
+            "AND t.status = 'CONCLUIDA' " +
+            "AND (t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.PIX_ENVIADO " +
+            "OR t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.SAQUE " +
+            "OR t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.PAGAMENTO_EMPRESTIMO " +
+            "OR t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.COMPRA_DEBITO " +
+            "OR t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.COMPRA_CREDITO " +
+            "OR (t.tipo = br.uff.ic.mmbank.model.enums.TipoTransacao.TRANSFERENCIA AND t.valor < 0))")
+    BigDecimal calcularTotalSaidas(@Param("contaId") Long contaId);
 }

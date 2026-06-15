@@ -47,8 +47,11 @@ public class SecurityConfig {
                         .requestMatchers("/webhook/**").permitAll()
                         .requestMatchers("/transferencias/**").permitAll()
                         .requestMatchers("/emprestimos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/cartoes/**").permitAll()
                         .requestMatchers("/transacoes/contas/**").permitAll()
                         .requestMatchers("/contas/**", "/transacoes/**").permitAll()
+                        .requestMatchers("/contas", "/contas/**").permitAll()
+                        .requestMatchers("/contas", "/contas/").permitAll()
 
                         // qualquer outra rota criada exige autenticacao (como /cartoes/**)
                         .anyRequest().authenticated())

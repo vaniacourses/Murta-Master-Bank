@@ -54,12 +54,21 @@ export const useCartoes = () => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await api.get(`/cartoes/conta/${utilizador.id}`);
+      // 🌟 BUSCA DIRETO DA FONTE NO MOMENTO DO CLIQUE/RENDER
+      const tokenSalvo = localStorage.getItem('@MMBank:token');
+
+      const response = await api.get(`/cartoes/conta/${utilizador.id}`, {
+        headers: {
+          // Injeta manualmente para garantir que não vai vazio
+          Authorization: `Bearer ${tokenSalvo}`
+        }
+      });
+      
       const mapped = response.data.map(mapBackendToICartao);
       setCartoes(mapped);
     } catch (err: unknown) {
       console.error("Erro ao carregar cartões:", err);
-      setError('Não foi possível carregar os cartões. Verifique a ligação ao servidor.');
+      setError('Não foi possível carregar os cartões.');
     } finally {
       setIsLoading(false);
     }

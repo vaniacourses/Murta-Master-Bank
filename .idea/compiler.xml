@@ -3,30 +3,9 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Annotation profile for mmbank" enabled="true">
-        <sourceOutputDir name="../generated-sources/annotations" />
-        <sourceTestOutputDir name="../generated-test-sources/test-annotations" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
-        </processorPath>
-        <module name="mmbank.test" />
-        <module name="mmbank.main" />
-      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="api-mmb" target="21" />
+      <module name="mmbank" target="21" />
     </bytecodeTargetLevel>
-  </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_STRING" value="--enable-preview" />
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="api-mmb" options="-parameters" />
-      <module name="mmbank" options="-parameters --enable-preview" />
-      <module name="mmbank.main" options="-parameters --enable-preview" />
-      <module name="mmbank.test" options="-parameters" />
-    </option>
   </component>
 </project>
